@@ -113,11 +113,13 @@ const parentDashboard = {
             </label>
           </div>
           <div class="setting-row">
-            <span class="setting-label">⏱️ 每题时间（秒）</span>
-            <input type="range" min="10" max="120" step="5" id="timer-range"
-                   value="${state.settings.timerSeconds}"
-                   onchange="store.set('settings', {...store.get('settings'), timerSeconds: parseInt(this.value)})">
-            <span id="timer-value">${state.settings.timerSeconds}s</span>
+            <span class="setting-label">⏱️ 每题时间</span>
+          </div>
+          <div class="timer-options" id="timer-options">
+            ${[5,8,10,12,15,20,25,30,45,60,90,120].map(t =>
+              `<button class="timer-opt-btn ${state.settings.timerSeconds === t ? 'active' : ''}"
+                       onclick="store.set('settings', {...store.get('settings'), timerSeconds: ${t}}); parentDashboard.render()">${t}s</button>`
+            ).join('')}
           </div>
           <div class="setting-row">
             <span class="setting-label">⏰ 每日学习时长</span>
@@ -216,11 +218,9 @@ document.addEventListener('page-changed', (e) => {
   }
 });
 
-// 监听范围滑块的值显示
+// 监听学习时长滑块的值显示
 document.addEventListener('change', (e) => {
   if (e.target.type === 'range' && e.target.nextElementSibling) {
-    const val = e.target.value;
-    e.target.nextElementSibling.textContent =
-      e.target.id === 'timer-range' ? val + 's' : val + '分钟';
+    e.target.nextElementSibling.textContent = e.target.value + '分钟';
   }
 });

@@ -29,6 +29,7 @@ function getDefaultState() {
       width: 8, height: 6,
       tiles: [],
       decorations: [],
+      expansions: 0,
     },
 
     inventory: {},
@@ -98,6 +99,7 @@ const store = {
         result.garden = { ...defaults.garden, ...saved.garden };
         result.garden.tiles = saved.garden.tiles || [];
         result.garden.decorations = saved.garden.decorations || [];
+        result.garden.expansions = saved.garden.expansions || 0;
       } else if (key === 'settings' && saved.settings) {
         result.settings = { ...defaults.settings, ...saved.settings };
       } else if (key === 'unitProgress' && saved.unitProgress) {
@@ -213,7 +215,7 @@ const store = {
   },
 
   _expForLevel(level) {
-    return Math.floor(50 * Math.pow(1.2, level - 1));
+    return Math.floor(120 * Math.pow(1.35, level - 1));
   },
 
   getExpProgress() {
@@ -240,6 +242,43 @@ const store = {
 
   hasItem(itemId, count = 1) {
     return (this._state.inventory[itemId] || 0) >= count;
+  },
+
+  // ----- 花园扩展 -----
+  getGardenSize() {
+    const g = this._state.garden;
+    const e = g.expansions || 0;
+    return {
+      width: Math.min(8 + e * 2, 20),
+      height: Math.min(6 + e, 12),
+      expansions: e,
+    };
+  },
+
+  getGardenExpansionCost() {
+    const e = this._state.garden.expansions || 0;
+    return Math.floor(200 * Math.pow(1.1, e));
+  },
+
+  getGardenExpansionLevelReq() {
+    const e = this._state.garden.expansions || 0;
+    return 2 + e * 2; // 第1次扩展需2级，第2次需4级，第3次需6级...
+  },
+
+  expandGarden() {
+    const level = this._state.level;
+    const e = this._state.garden.expansions || 0;
+    const levelReq = this.getGardenExpansionLevelReq();
+    if (level < levelReq) return { ok: false, msg: `需要 ${levelReq} 级才能扩展` };
+
+    const cost = this.getGardenExpansionCost();
+    if (this._state.coins < cost) return { ok: false, msg: `需要 ${cost} 阳光币` };
+
+    this._state.coins -= cost;
+    this._state.garden.expansions = e + 1;
+    this._save();
+    this._updateUI();
+    return { ok: true, msg: '🎉 花园扩展成功！', size: this.getGardenSize() };
   },
 
   // ----- 答题记录（学科感知） -----

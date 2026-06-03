@@ -45,16 +45,17 @@ const garden = {
     if (!map) return;
 
     const g = store.get('garden');
+    const size = store.getGardenSize();
     const cellW = GARDEN_CELL_SIZE;
-    const mapW = g.width * cellW;
+    const mapW = size.width * cellW;
 
     map.style.width = `${mapW}px`;
     map.style.position = 'relative';
 
     // 构建网格
     let html = '';
-    for (let y = 0; y < g.height; y++) {
-      for (let x = 0; x < g.width; x++) {
+    for (let y = 0; y < size.height; y++) {
+      for (let x = 0; x < size.width; x++) {
         const tile = g.tiles.find(t => t.x === x && t.y === y);
         const decor = g.decorations.find(d => d.x === x && d.y === y);
         const pet = g.decorations.find(d => d.x === x && d.y === y && GARDEN_ITEMS[d.type]?.category === 'pet');
@@ -104,7 +105,7 @@ const garden = {
     }
 
     map.innerHTML = html;
-    map.style.height = `${g.height * cellW}px`;
+    map.style.height = `${size.height * cellW}px`;
 
     // 更新工具栏
     this.renderToolbar();
@@ -125,6 +126,7 @@ const garden = {
           <button class="btn btn-sm btn-success" onclick="garden.exitEditMode()">✅ 完成编辑</button>
         ` : `
           <button class="btn btn-sm btn-secondary" onclick="garden.enterEditMode()">✏️ 编辑</button>
+          <button class="btn btn-sm btn-gold" onclick="garden.showExpandDialog()">🗺️ 扩展</button>
         `}
       </div>
     `;
@@ -265,6 +267,46 @@ const garden = {
       this.render();
       store.showToast('已移回背包');
     }
+  },
+
+  // ---------- 扩展花园 ----------
+  showExpandDialog() {
+    const size = store.getGardenSize();
+    const cost = store.getGardenExpansionCost();
+    const levelReq = store.getGardenExpansionLevelReq();
+    const level = store.get('level');
+
+    const nextW = Math.min(size.width + 2, 20);
+    const nextH = Math.min(size.height + 1, 12);
+
+    app.openModal(`
+      <div class="text-center">
+        <div style="font-size:3rem;">🗺️</div>
+        <h3>扩展花园</h3>
+        <p class="mt-8">当前大小：${size.width} × ${size.height}</p>
+        <p>扩展后：${nextW} × ${nextH}</p>
+        <p class="mt-8">等级要求：<strong>${levelReq}级</strong> ${level >= levelReq ? '✅' : '❌'}</p>
+        <p>费用：<strong>☀️ ${cost}</strong></p>
+        <div class="mt-16">
+          <button class="btn btn-gold" onclick="garden.doExpand()" ${level < levelReq ? 'disabled style="opacity:0.5"' : ''}>
+            🗺️ 扩展（+${(nextW * nextH) - (size.width * size.height)}格）
+          </button>
+          <button class="btn btn-sm mt-8" style="background:none;color:var(--color-text-light);border:none"
+                  onclick="app.closeModal()">取消</button>
+        </div>
+      </div>
+    `);
+  },
+
+  doExpand() {
+    const result = store.expandGarden();
+    app.closeModal();
+    if (result.ok) {
+      store.showToast(result.msg, 'success');
+    } else {
+      store.showToast(result.msg, 'error');
+    }
+    this.render();
   },
 };
 

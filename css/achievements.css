@@ -351,6 +351,40 @@
   color: var(--color-error);
 }
 
+/* ---------- 时间选项按钮 ---------- */
+.timer-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.timer-opt-btn {
+  padding: 6px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 44px;
+  text-align: center;
+}
+
+.timer-opt-btn:hover {
+  border-color: var(--color-secondary);
+}
+
+.timer-opt-btn.active {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, #fff5f7, white);
+  color: var(--color-primary-dark);
+  box-shadow: 0 0 0 2px rgba(255,158,181,0.25);
+}
+
 /* ---------- 页面内分隔线 ---------- */
 #achievements-screen hr {
   border: none;
