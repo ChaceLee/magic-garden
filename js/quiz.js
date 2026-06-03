@@ -92,6 +92,12 @@ const quiz = {
           <span>📝 共 <strong id="stat-total">0</strong> 题</span>
           <span>🎯 正确率 <strong id="stat-rate">0%</strong></span>
         </div>
+
+        <!-- 快速保存 -->
+        <div class="quick-save">
+          <button class="btn btn-sm" style="background:var(--color-secondary);color:white;border:none;width:100%"
+                  onclick="cloudSave.save()">💾 保存进度</button>
+        </div>
       </div>
     `;
 

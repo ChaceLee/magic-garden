@@ -131,6 +131,18 @@ const parentDashboard = {
         </div>
       </div>
 
+      <!-- 云存档 -->
+      <div class="parent-card">
+        <h3>☁️ 云存档</h3>
+        <p class="no-data" style="font-size:0.8rem;">
+          当前存档码：<strong id="cloud-save-code">${cloudSave.getCurrentCode()}</strong>
+        </p>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" onclick="cloudSave.save()">💾 保存到云端</button>
+          <button class="btn btn-sm btn-secondary" onclick="cloudLoadPrompt()">📥 从云端恢复</button>
+        </div>
+      </div>
+
       <!-- 重置 -->
       <div class="parent-card danger-zone">
         <h3>⚠️ 危险区</h3>
@@ -217,6 +229,36 @@ document.addEventListener('page-changed', (e) => {
     setTimeout(() => parentDashboard.renderSubject('math'), 50);
   }
 });
+
+// ---------- 云端加载输入框 ----------
+function cloudLoadPrompt() {
+  const current = cloudSave.getCurrentCode();
+  app.openModal(`
+    <div class="text-center">
+      <h3>📥 从云端恢复</h3>
+      <p class="mt-8">输入存档码加载进度</p>
+      <input type="text" id="cloud-load-input" value="${current}"
+             style="width:100%;padding:12px;font-size:1.2rem;text-align:center;border:2px solid #ddd;border-radius:10px;margin:12px 0;font-family:monospace;letter-spacing:4px;"
+             maxlength="10" placeholder="输入6位存档码">
+      <button class="btn btn-primary btn-block" onclick="doCloudLoad()">
+        📥 加载
+      </button>
+      <button class="btn btn-sm mt-8" style="background:none;color:var(--color-text-light);border:none"
+              onclick="app.closeModal()">取消</button>
+    </div>
+  `);
+}
+
+function doCloudLoad() {
+  const input = document.getElementById('cloud-load-input');
+  const code = input ? input.value.trim().toUpperCase() : '';
+  if (!code || code.length < 4) {
+    store.showToast('请输入有效的存档码', 'error');
+    return;
+  }
+  app.closeModal();
+  cloudSave.load(code);
+}
 
 // 监听学习时长滑块的值显示
 document.addEventListener('change', (e) => {
