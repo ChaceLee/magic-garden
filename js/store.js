@@ -30,6 +30,14 @@ function getDefaultState() {
       tiles: [],
       decorations: [],
       expansions: 0,
+      houseLevel: 0,      // 0=无 1=茅草房 2=木屋 3=砖房 4=石头房 5=别墅
+      furniture: [],       // [{ x, y, type }]
+    },
+
+    // 每日目标
+    dailyGoals: {
+      questionTarget: 10,   // 10/20/30 题
+      accuracyTarget: 80,   // 70/80/90 %
     },
 
     inventory: {},
@@ -100,6 +108,8 @@ const store = {
         result.garden.tiles = saved.garden.tiles || [];
         result.garden.decorations = saved.garden.decorations || [];
         result.garden.expansions = saved.garden.expansions || 0;
+        result.garden.houseLevel = saved.garden.houseLevel || 0;
+        result.garden.furniture = saved.garden.furniture || [];
       } else if (key === 'settings' && saved.settings) {
         result.settings = { ...defaults.settings, ...saved.settings };
       } else if (key === 'unitProgress' && saved.unitProgress) {
@@ -279,6 +289,107 @@ const store = {
     this._save();
     this._updateUI();
     return { ok: true, msg: '🎉 花园扩展成功！', size: this.getGardenSize() };
+  },
+
+  // ----- 房屋系统 -----
+
+  HOUSE_LEVELS: [
+    { name: '空地', icon: '🌿', cost: 0, levelReq: 0, materials: {} },
+    { name: '茅草房', icon: '🏚️', cost: 200, levelReq: 2, materials: { wood: 5 } },
+    { name: '木屋', icon: '🪵', cost: 500, levelReq: 4, materials: { wood: 10, stone: 5 } },
+    { name: '砖房', icon: '🧱', cost: 1000, levelReq: 6, materials: { stone: 15, glass: 10 } },
+    { name: '石头房', icon: '🪨', cost: 2000, levelReq: 8, materials: { stone: 20, wood: 15 } },
+    { name: '小别墅', icon: '🏡', cost: 5000, levelReq: 10, materials: { stone: 30, glass: 20, paint: 10 } },
+  ],
+
+  getHouseLevel() { return this._state.garden.houseLevel || 0; },
+
+  getHouseInfo() {
+    const level = this.getHouseLevel();
+    return this.HOUSE_LEVELS[level] || this.HOUSE_LEVELS[0];
+  },
+
+  getNextHouseInfo() {
+    const level = this.getHouseLevel();
+    const next = this.HOUSE_LEVELS[level + 1];
+    if (!next) return null;
+    // 检查材料是否足够
+    const inv = this._state.inventory;
+    const hasMaterials = {};
+    let canAfford = true;
+    for (const [mat, qty] of Object.entries(next.materials)) {
+      const has = inv[mat] || 0;
+      hasMaterials[mat] = { need: qty, have: has, ok: has >= qty };
+      if (has < qty) canAfford = false;
+    }
+    return {
+      ...next,
+      level: level + 1,
+      hasCoins: this._state.coins >= next.cost,
+      hasLevel: this._state.level >= next.levelReq,
+      canAfford,
+      materials: hasMaterials,
+    };
+  },
+
+  upgradeHouse() {
+    const next = this.getNextHouseInfo();
+    if (!next) return { ok: false, msg: '已经是最高级了！' };
+
+    if (this._state.level < next.levelReq) return { ok: false, msg: `需要 ${next.levelReq} 级才能升级` };
+    if (this._state.coins < next.cost) return { ok: false, msg: `需要 ${next.cost} 阳光币` };
+
+    // 检查材料
+    const inv = this._state.inventory;
+    for (const [mat, qty] of Object.entries(next.materials)) {
+      if ((inv[mat] || 0) < qty) return { ok: false, msg: `${mat} 不够` };
+    }
+
+    // 扣费扣材料
+    this._state.coins -= next.cost;
+    for (const [mat, qty] of Object.entries(next.materials)) {
+      inv[mat] -= qty;
+      if (inv[mat] <= 0) delete inv[mat];
+    }
+
+    this._state.garden.houseLevel = (this.getHouseLevel() + 1);
+    this._save();
+    this._updateUI();
+    return { ok: true, msg: `🎉 房子升级为${next.name}！`, level: this.getHouseLevel() };
+  },
+
+  // ----- 每日目标 -----
+  checkDailyGoal(stats) {
+    const g = this._state.dailyGoals;
+    const dayStats = stats || {
+      answered: this._state.dailyAnswered,
+      correct: this._getTodayCorrect(),
+      minutes: 0, // 暂不严格计时
+    };
+    const qDone = dayStats.answered >= g.questionTarget;
+    const aDone = dayStats.answered > 0
+      ? (dayStats.correct / dayStats.answered) * 100 >= g.accuracyTarget
+      : false;
+    return {
+      questionDone: qDone,
+      accuracyDone: aDone,
+      allDone: qDone && aDone,
+      progress: Math.min(dayStats.answered / g.questionTarget, 1),
+      answered: dayStats.answered,
+      target: g.questionTarget,
+    };
+  },
+
+  _getTodayCorrect() {
+    const today = new Date().toISOString().split('T')[0];
+    let correct = 0;
+    for (const prog of Object.values(this._state.unitProgress)) {
+      if (prog.lastPracticed === today) {
+        correct += prog.correct;
+      }
+    }
+    // fallback: 粗略估算
+    return correct || Math.floor(this._state.dailyAnswered * 0.7);
   },
 
   // ----- 答题记录（学科感知） -----

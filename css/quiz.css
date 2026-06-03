@@ -509,6 +509,42 @@
   }
 }
 
+/* ---------- 每日目标 ---------- */
+.daily-goal { margin: 4px 0; }
+
+.goal-card {
+  padding: 8px 14px;
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-soft);
+  border-left: 4px solid var(--color-accent);
+}
+.goal-card.goal-done { border-left-color: var(--color-success); }
+
+.goal-header {
+  display: flex; justify-content: space-between;
+  font-size: 0.85rem; font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.goal-bar {
+  height: 8px; background: #eee;
+  border-radius: 4px; overflow: hidden;
+}
+
+.goal-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), #ff8c00);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.goal-status {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  margin-top: 3px;
+}
+
 /* ---------- 复习模式 ---------- */
 .review-entry {
   margin: 4px 0;

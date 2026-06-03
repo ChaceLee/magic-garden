@@ -131,6 +131,31 @@ const parentDashboard = {
         </div>
       </div>
 
+      <!-- 每日目标设置 -->
+      <div class="parent-card">
+        <h3>🎯 每日目标设置</h3>
+        <div class="settings-grid">
+          <div class="setting-row">
+            <span class="setting-label">📝 每日答题数</span>
+          </div>
+          <div class="timer-options" style="margin-bottom:8px">
+            ${[5,10,15,20,30].map(n =>
+              `<button class="timer-opt-btn ${state.dailyGoals.questionTarget === n ? 'active' : ''}"
+                       onclick="store.set('dailyGoals', {...store.get('dailyGoals'), questionTarget: ${n}}); parentDashboard.render()">${n}题</button>`
+            ).join('')}
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">🎯 正确率目标</span>
+          </div>
+          <div class="timer-options">
+            ${[70,80,90].map(n =>
+              `<button class="timer-opt-btn ${state.dailyGoals.accuracyTarget === n ? 'active' : ''}"
+                       onclick="store.set('dailyGoals', {...store.get('dailyGoals'), accuracyTarget: ${n}}); parentDashboard.render()">${n}%</button>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+
       <!-- 云存档 -->
       <div class="parent-card">
         <h3>☁️ 云存档</h3>

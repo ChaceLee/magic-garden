@@ -20,6 +20,8 @@ const shop = {
       'tree': { name: '🌳 树木', items: [] },
       'decoration': { name: '🎀 装饰', items: [] },
       'pet': { name: '🐱 宠物', items: [] },
+      'material': { name: '🧱 建材', items: [] },
+      'furniture': { name: '🛋️ 家具', items: [] },
     };
 
     for (const [id, item] of Object.entries(GARDEN_ITEMS)) {

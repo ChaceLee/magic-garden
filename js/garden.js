@@ -30,6 +30,22 @@ const GARDEN_ITEMS = {
   'bird': { name: '🐦 小黄鸟', category: 'pet', cost: 2, costType: 'star', unlockLevel: 1 },
   'hamster': { name: '🐹 小仓鼠', category: 'pet', cost: 4, costType: 'star', unlockLevel: 2 },
   'butterfly': { name: '🦋 蝴蝶', category: 'pet', cost: 2, costType: 'star', unlockLevel: 1 },
+
+  // 建材类
+  'wood': { name: '🪵 木材', category: 'material', cost: 50, unlockLevel: 2 },
+  'stone': { name: '🪨 石材', category: 'material', cost: 80, unlockLevel: 3 },
+  'glass': { name: '🪟 玻璃', category: 'material', cost: 100, unlockLevel: 4 },
+  'paint': { name: '🎨 油漆', category: 'material', cost: 60, unlockLevel: 3 },
+
+  // 家具类（用星星购买）
+  'sofa': { name: '🛋️ 沙发', category: 'furniture', cost: 3, costType: 'star', unlockLevel: 2 },
+  'chair': { name: '🪑 椅子', category: 'furniture', cost: 2, costType: 'star', unlockLevel: 1 },
+  'bed': { name: '🛏️ 床', category: 'furniture', cost: 5, costType: 'star', unlockLevel: 3 },
+  'tv': { name: '📺 电视', category: 'furniture', cost: 4, costType: 'star', unlockLevel: 3 },
+  'plant': { name: '🪴 盆栽', category: 'furniture', cost: 2, costType: 'star', unlockLevel: 1 },
+  'painting': { name: '🖼️ 挂画', category: 'furniture', cost: 3, costType: 'star', unlockLevel: 2 },
+  'desk': { name: '📚 书桌', category: 'furniture', cost: 4, costType: 'star', unlockLevel: 2 },
+  'closet': { name: '🗄️ 衣柜', category: 'furniture', cost: 3, costType: 'star', unlockLevel: 2 },
 };
 
 const GARDEN_CELL_SIZE = 60; // px per cell
@@ -107,8 +123,9 @@ const garden = {
     map.innerHTML = html;
     map.style.height = `${size.height * cellW}px`;
 
-    // 更新工具栏
+    // 更新工具栏和房屋区
     this.renderToolbar();
+    this.renderHouseArea();
   },
 
   // ---------- 工具栏 ----------
@@ -307,6 +324,169 @@ const garden = {
       store.showToast(result.msg, 'error');
     }
     this.render();
+  },
+
+  // ---------- 房屋区域 ----------
+  renderHouseArea() {
+    const el = document.getElementById('house-area');
+    if (!el) return;
+
+    const house = store.getHouseInfo();
+    const next = store.getNextHouseInfo();
+    const level = store.getHouseLevel();
+
+    el.innerHTML = `
+      <div class="house-card" onclick="garden.showHouseUpgrade()">
+        <div class="house-icon">${house.icon}</div>
+        <div class="house-info">
+          <div class="house-name">${house.name}</div>
+          ${next ? `<div class="house-next">下一级：${next.icon} ${next.name}</div>` : '<div class="house-next">已是最高级！🏆</div>'}
+        </div>
+        <div class="house-action">
+          <button class="btn btn-sm ${level < 5 ? 'btn-primary' : 'btn-success'}"
+                  onclick="event.stopPropagation(); garden.showHouseUpgrade()">
+            ${level === 0 ? '🏗️ 建造' : level < 5 ? '🔨 升级' : '✅'}
+          </button>
+          ${level > 0 ? `<button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); garden.showInterior()">🏠 房间</button>` : ''}
+        </div>
+      </div>
+    `;
+  },
+
+  showHouseUpgrade() {
+    const current = store.getHouseInfo();
+    const next = store.getNextHouseInfo();
+
+    if (!next) {
+      app.openModal(`<div class="text-center"><div style="font-size:3rem">🏡</div><h3>已是最高级！</h3><p class="mt-8">你的小别墅已经是最豪华的了 🎉</p><button class="btn btn-primary mt-16" onclick="app.closeModal()">好的</button></div>`);
+      return;
+    }
+
+    let matHtml = '';
+    for (const [mat, info] of Object.entries(next.materials)) {
+      const icons = { wood: '🪵', stone: '🪨', glass: '🪟', paint: '🎨' };
+      matHtml += `<span style="display:inline-block;margin:4px 8px;${info.ok ? '' : 'opacity:0.5'}">${icons[mat]||'📦'} ${mat} ${info.have}/${info.need}</span>`;
+    }
+
+    app.openModal(`
+      <div class="text-center">
+        <div style="font-size:3rem">${current.icon} → ${next.icon}</div>
+        <h3>${current.name} → ${next.name}</h3>
+        <p class="mt-8">等级要求：<strong>${next.levelReq}级</strong> ${next.hasLevel ? '✅' : '❌'}</p>
+        <p>费用：<strong>☀️ ${next.cost}</strong> ${next.hasCoins ? '✅' : '❌'}</p>
+        <p class="mt-8">材料：${matHtml || '无'}</p>
+        <p style="font-size:0.8rem;color:var(--color-text-light);margin-top:6px">${next.canAfford && next.hasCoins && next.hasLevel ? '所有条件满足！' : '继续答题升级赚币吧 💪'}</p>
+        <div class="mt-16">
+          <button class="btn btn-gold" onclick="garden.doHouseUpgrade()"
+            ${next.canAfford && next.hasCoins && next.hasLevel ? '' : 'disabled style="opacity:0.5"'}>
+            🔨 升级${next.name}
+          </button>
+          <button class="btn btn-sm mt-8" style="background:none;color:var(--color-text-light);border:none"
+                  onclick="app.closeModal()">取消</button>
+        </div>
+      </div>
+    `);
+  },
+
+  doHouseUpgrade() {
+    const result = store.upgradeHouse();
+    app.closeModal();
+    if (result.ok) {
+      store.showToast(result.msg, 'success');
+    } else {
+      store.showToast(result.msg, 'error');
+    }
+    this.render();
+  },
+
+  showInterior() {
+    const level = store.getHouseLevel();
+    if (level < 1) { store.showToast('先建造房子！', 'error'); return; }
+
+    const house = store.getHouseInfo();
+    const furn = store.get('garden').furniture || [];
+
+    let gridHtml = '<div class="interior-grid">';
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 6; x++) {
+        const item = furn.find(f => f.x === x && f.y === y);
+        gridHtml += `<div class="interior-tile" onclick="garden.removeFurniture(${x},${y})">${item ? item.icon : ''}</div>`;
+      }
+    }
+    gridHtml += '</div>';
+
+    // 可用的家具
+    const inv = store.get('inventory');
+    const FURNITURE = [
+      { type: 'sofa', icon: '🛋️', name: '沙发', cost: 3 },
+      { type: 'chair', icon: '🪑', name: '椅子', cost: 2 },
+      { type: 'bed', icon: '🛏️', name: '床', cost: 5 },
+      { type: 'tv', icon: '📺', name: '电视', cost: 4 },
+      { type: 'plant', icon: '🪴', name: '盆栽', cost: 2 },
+      { type: 'painting', icon: '🖼️', name: '挂画', cost: 3 },
+      { type: 'desk', icon: '📚', name: '书桌', cost: 4 },
+      { type: 'closet', icon: '🗄️', name: '衣柜', cost: 3 },
+    ];
+
+    let furnHtml = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">';
+    for (const f of FURNITURE) {
+      const owned = inv[f.type] || 0;
+      furnHtml += `
+        <button class="btn btn-sm" style="font-size:0.85rem"
+                onclick="garden.buyFurniture('${f.type}','${f.icon}')"
+                ${owned > 0 ? '' : 'disabled'}>
+          ${f.icon} ${f.name} x${owned}
+        </button>
+      `;
+    }
+    furnHtml += '</div>';
+
+    // 商店购买链接
+    furnHtml += `<p style="font-size:0.8rem;color:var(--color-text-light)">用星星在商店买家具 ⭐</p>`;
+
+    app.openModal(`
+      <div style="text-align:center">
+        <div style="font-size:2rem">${house.icon}</div>
+        <h3>${house.name} 🏠 室内</h3>
+        ${gridHtml}
+        <p style="font-size:0.8rem;color:var(--color-text-light);margin:4px 0">点击家具可移除</p>
+        ${furnHtml}
+        <button class="btn btn-sm mt-8" style="background:none;color:var(--color-text-light);border:none"
+                onclick="app.closeModal(); garden.render()">关闭</button>
+      </div>
+    `);
+  },
+
+  buyFurniture(type, icon) {
+    const inv = store.get('inventory');
+    if (!inv[type] || inv[type] < 1) return;
+    inv[type]--;
+    if (inv[type] <= 0) delete inv[type];
+
+    const furn = store.get('garden').furniture;
+    // 找空位
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 6; x++) {
+        if (!furn.find(f => f.x === x && f.y === y)) {
+          furn.push({ x, y, type, icon });
+          store._save();
+          this.showInterior(); // 刷新
+          return;
+        }
+      }
+    }
+    store.showToast('房间满了，先移除一些家具', 'error');
+  },
+
+  removeFurniture(x, y) {
+    const furn = store.get('garden').furniture;
+    const idx = furn.findIndex(f => f.x === x && f.y === y);
+    if (idx >= 0) {
+      const removed = furn.splice(idx, 1)[0];
+      store.addItem(removed.type);
+      store._save();
+      this.showInterior();
+    }
   },
 };
 

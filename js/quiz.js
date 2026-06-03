@@ -52,6 +52,9 @@ const quiz = {
                   onclick="quiz.selectSemester(2)">📖 下册</button>
         </div>
 
+        <!-- 今日目标 -->
+        <div class="daily-goal" id="daily-goal"></div>
+
         <!-- 复习入口 -->
         <div class="review-entry" id="review-entry"></div>
 
@@ -103,6 +106,7 @@ const quiz = {
 
     this.renderUnitSelector();
     this.updateProgress();
+    this.renderDailyGoal();
     this.renderReviewEntry();
   },
 
@@ -387,6 +391,28 @@ const quiz = {
         <div class="mt-16">
           <button class="btn btn-success" onclick="quiz.startQuiz()">🔄 再来一轮</button>
           <button class="btn btn-secondary mt-8" onclick="quizEngine.filters.unit=null; quiz.render()">📚 换单元</button>
+        </div>
+      </div>
+    `;
+  },
+
+  // ---------- 每日目标 ----------
+  renderDailyGoal() {
+    const el = document.getElementById('daily-goal');
+    if (!el) return;
+    const goal = store.checkDailyGoal();
+
+    el.innerHTML = `
+      <div class="goal-card ${goal.allDone ? 'goal-done' : ''}">
+        <div class="goal-header">
+          <span>🎯 今日目标</span>
+          <span>${goal.answered}/${goal.target} 题</span>
+        </div>
+        <div class="goal-bar">
+          <div class="goal-fill" style="width:${goal.progress * 100}%"></div>
+        </div>
+        <div class="goal-status">
+          ${goal.allDone ? '🎉 今日目标完成！' : goal.answered > 0 ? '💪 继续加油！' : '✨ 开始答题吧！'}
         </div>
       </div>
     `;
