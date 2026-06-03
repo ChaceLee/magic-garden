@@ -114,7 +114,7 @@ const parentDashboard = {
           </div>
           <div class="setting-row">
             <span class="setting-label">⏱️ 每题时间（秒）</span>
-            <input type="range" min="10" max="120" step="5"
+            <input type="range" min="10" max="120" step="5" id="timer-range"
                    value="${state.settings.timerSeconds}"
                    onchange="store.set('settings', {...store.get('settings'), timerSeconds: parseInt(this.value)})">
             <span id="timer-value">${state.settings.timerSeconds}s</span>
@@ -221,6 +221,6 @@ document.addEventListener('change', (e) => {
   if (e.target.type === 'range' && e.target.nextElementSibling) {
     const val = e.target.value;
     e.target.nextElementSibling.textContent =
-      e.target.id === 'timer-value' ? val + 's' : val + '分钟';
+      e.target.id === 'timer-range' ? val + 's' : val + '分钟';
   }
 });
