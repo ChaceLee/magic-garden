@@ -1,0 +1,359 @@
+/* ============================================================
+   🌸 梦幻数学花园 — 成就 & 家长面板样式
+   ============================================================ */
+
+#achievements-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#achievements-screen h2 {
+  font-size: 1.3rem;
+  color: var(--color-text);
+  text-align: center;
+}
+
+/* ---------- 成就统计 ---------- */
+.achievement-stats {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- 成就网格 ---------- */
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.achievement-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+  transition: transform 0.2s;
+  position: relative;
+}
+
+.achievement-card.unlocked {
+  border: 2px solid var(--color-accent);
+}
+
+.achievement-card.locked {
+  opacity: 0.65;
+  filter: grayscale(0.5);
+}
+
+.achievement-card:hover {
+  transform: translateY(-2px);
+}
+
+.ach-icon {
+  font-size: 2rem;
+}
+
+.ach-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ach-desc {
+  font-size: 0.7rem;
+  color: var(--color-text-light);
+}
+
+.ach-check {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.9rem;
+}
+
+/* ---------- 家长面板 ---------- */
+#parent-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.parent-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* ---------- 家长面板学科切换 ---------- */
+.parent-subject-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.parent-subject-btn {
+  padding: 6px 18px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.parent-subject-btn.active {
+  border-color: var(--color-primary);
+  background: #fff5f7;
+  color: var(--color-primary-dark);
+}
+
+.mistake-subject-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+  margin: 6px 0 4px;
+  padding: 4px 8px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.parent-card h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--color-text);
+}
+
+/* 统计网格 */
+.parent-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.parent-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+}
+
+.p-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.p-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+/* 知识点进度 */
+.knowledge-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grade-block {
+  border-left: 3px solid var(--color-secondary);
+  padding-left: 12px;
+}
+
+.grade-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  margin-bottom: 6px;
+}
+
+.grade-units {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.unit-row {
+  display: grid;
+  grid-template-columns: 1fr auto 80px auto;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.unit-name {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unit-rate {
+  font-weight: 700;
+  min-width: 30px;
+  text-align: right;
+}
+
+.unit-rate.good { color: var(--color-success); }
+.unit-rate.ok   { color: #ff9800; }
+.unit-rate.low  { color: var(--color-error); }
+
+.unit-last {
+  font-size: 0.7rem;
+  color: var(--color-text-light);
+  text-align: right;
+}
+
+.no-data {
+  color: var(--color-text-light);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 10px;
+}
+
+/* 错题集 */
+.mistakes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.mistake-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff8f0;
+  border-radius: var(--radius-sm);
+  border: 1px solid #ffecd5;
+  font-size: 0.85rem;
+}
+
+.mistake-q {
+  flex: 1;
+}
+
+.mistake-answer {
+  font-size: 0.8rem;
+}
+
+.mistake-answer strong {
+  color: var(--color-success);
+}
+
+.mistake-count {
+  font-size: 0.7rem;
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+/* 设置 */
+.settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.setting-label {
+  min-width: 100px;
+  font-weight: 500;
+}
+
+.setting-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--color-primary);
+  max-width: 150px;
+}
+
+.setting-row span:last-child {
+  min-width: 50px;
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+/* 切换开关 */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #ccc;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle input:checked + .toggle-slider {
+  background: var(--color-primary);
+}
+
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+/* 危险区 */
+.danger-zone {
+  border: 1px solid var(--color-error);
+}
+
+.danger-zone h3 {
+  color: var(--color-error);
+}
+
+/* ---------- 页面内分隔线 ---------- */
+#achievements-screen hr {
+  border: none;
+  border-top: 2px dashed #e8e8e8;
+  margin: 8px 0;
+}

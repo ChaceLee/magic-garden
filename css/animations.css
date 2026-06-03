@@ -1,0 +1,113 @@
+/* ============================================================
+   🌸 梦幻数学花园 — 动画
+   ============================================================ */
+
+/* 浮动 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 弹跳 */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  30%      { transform: translateY(-12px); }
+  50%      { transform: translateY(-6px); }
+  70%      { transform: translateY(-3px); }
+}
+
+.bounce {
+  animation: bounce 1s ease;
+}
+
+/* 心跳 */
+@keyframes heartBeat {
+  0%   { transform: scale(1); }
+  15%  { transform: scale(1.2); }
+  30%  { transform: scale(1); }
+  45%  { transform: scale(1.1); }
+  60%  { transform: scale(1); }
+}
+
+.heart-beat {
+  animation: heartBeat 1.2s ease infinite;
+}
+
+/* 旋转 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 2s linear infinite;
+}
+
+/* 闪烁 */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); }
+  50%      { box-shadow: 0 0 20px rgba(255,215,0,0.6); }
+}
+
+.glow {
+  animation: glow 1.5s ease-in-out infinite;
+}
+
+/* 飘落 */
+@keyframes fall {
+  0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(60px) rotate(360deg); opacity: 0; }
+}
+
+.fall {
+  animation: fall 2s ease-in forwards;
+}
+
+/* 滑动进入 */
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease;
+}
+
+/* 缩放弹入 */
+@keyframes popIn {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pop-in {
+  animation: popIn 0.4s ease;
+}
+
+/* 彩虹文字（用于特殊成就） */
+@keyframes rainbow {
+  0%   { color: #ff9eb5; }
+  25%  { color: #ffd700; }
+  50%  { color: #a8d8ea; }
+  75%  { color: #b5e7a0; }
+  100% { color: #ff9eb5; }
+}
+
+.rainbow-text {
+  animation: rainbow 4s linear infinite;
+}
+
+/* 震动 */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-3deg); }
+  75%      { transform: rotate(3deg); }
+}
+
+.wiggle {
+  animation: wiggle 0.3s ease infinite;
+}

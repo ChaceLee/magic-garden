@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🌸 知识花园</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/quiz.css">
+  <link rel="stylesheet" href="css/garden.css">
+  <link rel="stylesheet" href="css/shop.css">
+  <link rel="stylesheet" href="css/achievements.css">
+  <link rel="stylesheet" href="css/parent.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <!-- Preload emoji font for consistent rendering -->
+  <meta name="theme-color" content="#f0f8ff">
+</head>
+<body>
+  <div id="app">
+    <!-- ==================== 顶部栏 ==================== -->
+    <header id="top-bar">
+      <div class="top-left">
+        <span class="app-title">🌸 知识花园</span>
+      </div>
+      <div class="top-stats">
+        <span class="stat-item" id="stat-level">🏅 Lv.1</span>
+        <span class="stat-item" id="stat-coins">☀️ <span id="coin-count">0</span></span>
+        <span class="stat-item" id="stat-stars">⭐ <span id="star-count">0</span></span>
+      </div>
+    </header>
+
+    <!-- ==================== 页面容器 ==================== -->
+    <main id="page-container">
+      <!-- 答题页 -->
+      <section id="page-quiz" class="page active">
+        <div id="quiz-screen"></div>
+      </section>
+
+      <!-- 花园页 -->
+      <section id="page-garden" class="page">
+        <div id="garden-screen">
+          <div class="garden-toolbar">
+            <h2>🌻 我的花园</h2>
+            <button class="btn btn-sm" onclick="garden.enterEditMode()">✏️ 编辑</button>
+          </div>
+          <div id="garden-map"></div>
+        </div>
+      </section>
+
+      <!-- 商店页 -->
+      <section id="page-shop" class="page">
+        <div id="shop-screen">
+          <h2>🏪 商店</h2>
+          <div id="shop-grid"></div>
+        </div>
+      </section>
+
+      <!-- 成就页 -->
+      <section id="page-achievements" class="page">
+        <div id="achievements-screen">
+          <h2>🏆 成就</h2>
+          <div id="achievement-grid"></div>
+          <hr>
+          <h2>📊 学习报告</h2>
+          <div id="parent-dashboard"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================== 底部导航栏 ==================== -->
+    <nav id="bottom-nav">
+      <button class="nav-btn active" data-page="quiz">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">答题</span>
+      </button>
+      <button class="nav-btn" data-page="garden">
+        <span class="nav-icon">🌻</span>
+        <span class="nav-label">花园</span>
+      </button>
+      <button class="nav-btn" data-page="shop">
+        <span class="nav-icon">🏪</span>
+        <span class="nav-label">商店</span>
+      </button>
+      <button class="nav-btn" data-page="achievements">
+        <span class="nav-icon">🏆</span>
+        <span class="nav-label">成就</span>
+      </button>
+    </nav>
+
+    <!-- ==================== 模态框 ==================== -->
+    <div id="modal-overlay" class="hidden" onclick="app.closeModal()">
+      <div id="modal-content" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <!-- ==================== 弹窗提示 ==================== -->
+    <div id="toast-container"></div>
+  </div>
+
+  <!-- ==================== 脚本加载 ==================== -->
+  <script src="js/store.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/quiz-engine.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/questions-chinese.js"></script>
+  <script src="js/questions-english.js"></script>
+  <script src="js/garden.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/parent.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+/* ============================================================
+   🌸 梦幻数学花园 — 商店样式
+   ============================================================ */
+
+#shop-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#shop-screen h2 {
+  font-size: 1.3rem;
+  color: var(--color-text);
+  text-align: center;
+}
+
+/* ---------- 分类 ---------- */
+.shop-category {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.category-header h3 {
+  font-size: 1.05rem;
+}
+
+.category-count {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+}
+
+/* ---------- 商品网格 ---------- */
+.category-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.shop-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  transition: transform 0.15s;
+}
+
+.shop-item:not(.locked):hover {
+  transform: translateY(-2px);
+}
+
+.shop-item.locked {
+  opacity: 0.6;
+}
+
+.shop-item-icon {
+  font-size: 2rem;
+}
+
+.shop-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.shop-item-info {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.item-info-badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  background: #e8e8e8;
+  border-radius: 8px;
+  color: var(--color-text-light);
+}
+
+.shop-item-cost {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ff8c00;
+}
+
+.shop-item-cost.too-expensive {
+  color: var(--color-error);
+}
+
+.shop-item-lock {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+}
+
+.shop-item .btn-disabled {
+  background: #ddd;
+  color: #aaa;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.empty-shop {
+  text-align: center;
+  color: var(--color-text-light);
+  padding: 40px;
+}
