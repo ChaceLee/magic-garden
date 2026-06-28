@@ -567,6 +567,160 @@ const ENGLISH_QUESTION_BANK = {
   },
 };
 
+const ENGLISH_PHONETIC_DICT = {
+  'cat': '/kæt/',
+  'dog': '/dɔːɡ/',
+  'bird': '/bɜːrd/',
+  'fish': '/fɪʃ/',
+  'rabbit': '/ˈræbɪt/',
+  'frog': '/frɔːɡ/',
+  'duck': '/dʌk/',
+  'bear': '/ber/',
+  'monkey': '/ˈmʌŋki/',
+  'panda': '/ˈpændə/',
+  'pig': '/pɪɡ/',
+  'turtle': '/ˈtɜːrtl/',
+  'penguin': '/ˈpeŋɡwɪn/',
+  'lion': '/ˈlaɪən/',
+  'fox': '/fɑːks/',
+  'zebra': '/ˈziːbrə/',
+
+  'red': '/red/',
+  'blue': '/bluː/',
+  'green': '/ɡriːn/',
+  'yellow': '/ˈjeloʊ/',
+  'white': '/waɪt/',
+  'black': '/blæk/',
+  'pink': '/pɪŋk/',
+  'purple': '/ˈpɜːrpl/',
+  'orange': '/ˈɔːrɪndʒ/',
+  'brown': '/braʊn/',
+  'gray': '/ɡreɪ/',
+  'gold': '/ɡoʊld/',
+
+  'one': '/wʌn/',
+  'two': '/tuː/',
+  'three': '/θriː/',
+  'four': '/fɔːr/',
+  'five': '/faɪv/',
+  'six': '/sɪks/',
+  'seven': '/ˈsevn/',
+  'eight': '/eɪt/',
+  'nine': '/naɪn/',
+  'ten': '/ten/',
+  'eleven': '/ɪˈlevn/',
+  'twelve': '/twelv/',
+
+  'book': '/bʊk/',
+  'pencil': '/ˈpensl/',
+  'pen': '/pen/',
+  'ruler': '/ˈruːlər/',
+  'bag': '/bæɡ/',
+  'eraser': '/ɪˈreɪsər/',
+  'crayon': '/ˈkreɪən/',
+  'notebook': '/ˈnoʊtbʊk/',
+  'paint': '/peɪnt/',
+  'paper': '/ˈpeɪpər/',
+
+  'father': '/ˈfɑːðər/',
+  'mother': '/ˈmʌðər/',
+  'brother': '/ˈbrʌðər/',
+  'sister': '/ˈsɪstər/',
+  'grandpa': '/ˈɡrænpɑː/',
+  'grandma': '/ˈɡrænmɑː/',
+  'uncle': '/ˈʌŋkl/',
+  'aunt': '/ænt/',
+
+  'eye': '/aɪ/',
+  'ear': '/ɪr/',
+  'nose': '/noʊz/',
+  'mouth': '/maʊθ/',
+  'hand': '/hænd/',
+  'foot': '/fʊt/',
+  'head': '/hed/',
+  'tooth': '/tuːθ/',
+  'arm': '/ɑːrm/',
+  'finger': '/ˈfɪŋɡər/',
+  'hair': '/her/',
+  'heart': '/hɑːrt/',
+  'knee': '/niː/',
+
+  'apple': '/ˈæpl/',
+  'banana': '/bəˈnænə/',
+  'orange': '/ˈɔːrɪndʒ/',
+  'grape': '/ɡreɪp/',
+  'rice': '/raɪs/',
+  'bread': '/bred/',
+  'milk': '/mɪlk/',
+  'egg': '/eɡ/',
+  'juice': '/dʒuːs/',
+  'water': '/ˈwɔːtər/',
+  'tea': '/tiː/',
+  'cake': '/keɪk/',
+  'cookie': '/ˈkʊki/',
+
+  'hello': '/həˈloʊ/',
+  'hi': '/haɪ/',
+  'goodbye': '/ˌɡʊdˈbaɪ/',
+  'morning': '/ˈmɔːrnɪŋ/',
+  'afternoon': '/ˌæftərˈnuːn/',
+  'night': '/naɪt/',
+  'thank': '/θæŋk/',
+  'sorry': '/ˈsɑːri/',
+
+  'sun': '/sʌn/',
+  'rainbow': '/ˈreɪnboʊ/',
+  'umbrella': '/ʌmˈbrelə/',
+  'violin': '/ˌvaɪəˈlɪn/',
+  'winter': '/ˈwɪntər/',
+  'flower': '/ˈflaʊər/',
+  'tree': '/triː/',
+  'grass': '/ɡræs/',
+  'star': '/stɑːr/',
+  'moon': '/muːn/',
+
+  'monday': '/ˈmʌndeɪ/',
+  'tuesday': '/ˈtuːzdeɪ/',
+  'wednesday': '/ˈwenzdeɪ/',
+  'thursday': '/ˈθɜːrzdeɪ/',
+  'friday': '/ˈfraɪdeɪ/',
+  'saturday': '/ˈsætərdeɪ/',
+  'sunday': '/ˈsʌndeɪ/',
+  'weekend': '/ˈwiːkend/',
+
+  'sunny': '/ˈsʌni/',
+  'rainy': '/ˈreɪni/',
+  'cloudy': '/ˈklaʊdi/',
+  'windy': '/ˈwɪndi/',
+  'snowy': '/ˈsnoʊi/',
+  'foggy': '/ˈfɔːɡi/',
+  'weather': '/ˈweðər/',
+
+  'run': '/rʌn/',
+  'jump': '/dʒʌmp/',
+  'swim': '/swɪm/',
+  'sing': '/sɪŋ/',
+  'dance': '/dæns/',
+  'read': '/riːd/',
+  'write': '/raɪt/',
+  'draw': '/drɔː/',
+  'skate': '/skeɪt/',
+  'ride': '/raɪd/',
+  'drive': '/draɪv/',
+
+  'welcome': '/ˈwelkəm/',
+  'meet': '/miːt/',
+  'nice': '/naɪs/',
+  'color': '/ˈkʌlər/',
+  'colour': '/ˈkʌlər/',
+};
+
+function getPhonetic(word) {
+  if (!word) return '';
+  const w = word.toLowerCase().trim();
+  return ENGLISH_PHONETIC_DICT[w] || '';
+}
+
 // ==========================================================
 // EnglishQuestions Helper
 // ==========================================================
@@ -600,6 +754,8 @@ const EnglishQuestions = {
     const data = ENGLISH_QUESTION_BANK[key];
     return data ? data.units : [];
   },
+
+  getPhonetic: getPhonetic,
 };
 
 window.ENGLISH_QUESTIONS = EnglishQuestions;

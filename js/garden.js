@@ -20,9 +20,14 @@ const GARDEN_ITEMS = {
   // 装饰类
   'fence': { name: '🪵 木栅栏', category: 'decoration', cost: 40, unlockLevel: 1 },
   'fountain': { name: '⛲ 小喷泉', category: 'decoration', cost: 120, unlockLevel: 3 },
+  'fish-pond': { name: '🐟 鱼塘', category: 'decoration', cost: 150, unlockLevel: 3 },
   'stone-path': { name: '🪨 石子路', category: 'decoration', cost: 20, unlockLevel: 1 },
   'bench': { name: '🪑 长椅', category: 'decoration', cost: 60, unlockLevel: 2 },
   'lantern': { name: '🏮 小灯笼', category: 'decoration', cost: 55, unlockLevel: 2 },
+  'flower-bed': { name: '🌺 花坛', category: 'decoration', cost: 90, unlockLevel: 2 },
+  'arch': { name: '🌉 小拱桥', category: 'decoration', cost: 200, unlockLevel: 4 },
+  'wind-chime': { name: '🎐 风铃', category: 'decoration', cost: 35, unlockLevel: 1 },
+  'mushroom': { name: '🍄 蘑菇凳', category: 'decoration', cost: 30, unlockLevel: 1 },
 
   // 宠物类（特殊，用星星购买）
   'cat': { name: '🐱 小猫咪', category: 'pet', cost: 5, costType: 'star', unlockLevel: 2 },
@@ -52,6 +57,7 @@ const GARDEN_CELL_SIZE = 60; // px per cell
 
 const garden = {
   editMode: false,
+  removeMode: false,
   selectedItem: null,
   dragItem: null,
 
@@ -140,7 +146,11 @@ const garden = {
       <h2>🌻 我的花园</h2>
       <div class="toolbar-actions">
         ${this.editMode ? `
-          <button class="btn btn-sm btn-success" onclick="garden.exitEditMode()">✅ 完成编辑</button>
+          <button class="btn btn-sm ${this.removeMode ? 'btn-danger' : 'btn-secondary'}"
+                  onclick="garden.toggleRemoveMode()">
+            ${this.removeMode ? '🗑️ 退出移除' : '🗑️ 移除'}
+          </button>
+          <button class="btn btn-sm btn-success" onclick="garden.exitEditMode()">✅ 完成</button>
         ` : `
           <button class="btn btn-sm btn-secondary" onclick="garden.enterEditMode()">✏️ 编辑</button>
           <button class="btn btn-sm btn-gold" onclick="garden.showExpandDialog()">🗺️ 扩展</button>
@@ -185,12 +195,21 @@ const garden = {
   // ---------- 进入/退出编辑模式 ----------
   enterEditMode() {
     this.editMode = true;
+    this.removeMode = false;
     this.render();
-    store.showToast('点击网格放置物品，从背包选择要放的物品', '');
+    store.showToast('点击背包物品选择，再点网格放置；点「移除」可回收物品', '');
+  },
+
+  toggleRemoveMode() {
+    this.removeMode = !this.removeMode;
+    this.selectedItem = null;
+    this.render();
+    store.showToast(this.removeMode ? '🗑️ 点击已种植的物品可回收' : '退出移除模式', '');
   },
 
   exitEditMode() {
     this.editMode = false;
+    this.removeMode = false;
     this.selectedItem = null;
     this.render();
     store._save();
@@ -204,7 +223,12 @@ const garden = {
 
   // ---------- 点击网格 ----------
   onTileClick(x, y) {
-    if (!this.editMode || !this.selectedItem) return;
+    if (!this.editMode) return;
+    if (this.removeMode) {
+      this.removeItem(x, y);
+      return;
+    }
+    if (!this.selectedItem) return;
     this.placeItem(x, y, this.selectedItem);
   },
 
@@ -261,6 +285,7 @@ const garden = {
     store._save();
     this.render();
     store.showToast(`✅ 放置了 ${item.name}`, 'success');
+    store.checkAchievements();
   },
 
   // ---------- 移除物品（长按/右键） ----------

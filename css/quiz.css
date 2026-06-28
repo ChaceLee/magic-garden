@@ -412,6 +412,17 @@
   font-size: 1.2rem;
 }
 
+.feedback-phonetic {
+  font-size: 1rem;
+  color: #6a5acd;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0efff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-top: 2px;
+}
+
 @keyframes comboPop {
   0%   { transform: scale(0.5); }
   50%  { transform: scale(1.3); }

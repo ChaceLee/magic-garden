@@ -166,8 +166,10 @@ const store = {
 
         const bonus = 10 + Math.min(this._state.dailyStreak * 2, 30);
         this.addCoins(bonus);
+        const self = this;
         setTimeout(() => {
-          store.showToast(`🎉 签到成功！连续 ${this._state.dailyStreak} 天，获得 ${bonus} 阳光币`, 'success');
+          store.showToast(`🎉 签到成功！连续 ${self._state.dailyStreak} 天，获得 ${bonus} 阳光币`, 'success');
+          self.checkAchievements();
         }, 500);
       }
     }
@@ -200,6 +202,9 @@ const store = {
     this._state.coins = Math.max(0, this._state.coins + amount);
     this._save();
     this._updateUI();
+    if (amount > 0) {
+      this.checkAchievements();
+    }
   },
 
   addStars(amount) {
@@ -210,18 +215,21 @@ const store = {
 
   addExp(amount) {
     this._state.exp += amount;
-    const expNeeded = this._expForLevel(this._state.level);
-    if (this._state.exp >= expNeeded) {
+    let leveledUp = false;
+    while (true) {
+      const expNeeded = this._expForLevel(this._state.level);
+      if (this._state.exp < expNeeded) break;
       this._state.exp -= expNeeded;
       this._state.level++;
-      this._save();
-      this._updateUI();
-      this.showToast(`🎊 升级啦！达到 Lv.${this._state.level}`, 'success');
-      return true;
+      leveledUp = true;
     }
     this._save();
     this._updateUI();
-    return false;
+    if (leveledUp) {
+      this.showToast(`🎊 升级啦！达到 Lv.${this._state.level}`, 'success');
+      this.checkAchievements();
+    }
+    return leveledUp;
   },
 
   _expForLevel(level) {
@@ -392,8 +400,7 @@ const store = {
     return correct || Math.floor(this._state.dailyAnswered * 0.7);
   },
 
-  // ----- 答题记录（学科感知） -----
-  recordAnswer(question, correct) {
+  recordAnswer(question, correct, combo = 0) {
     const subject = question.subject || this._state.currentSubject || 'math';
     const key = unitKey(subject, question.grade, question.semester, question.unit);
     const prog = this._state.unitProgress;
@@ -402,6 +409,9 @@ const store = {
     }
     prog[key].total++;
     if (correct) prog[key].correct++;
+    if (combo > 0 && combo > prog[key].bestCombo) {
+      prog[key].bestCombo = combo;
+    }
     prog[key].lastPracticed = new Date().toISOString().split('T')[0];
 
     this._state.dailyAnswered++;
@@ -439,8 +449,11 @@ const store = {
     this._save();
   },
 
-  removeMistake(questionId) {
-    this._state.mistakes = this._state.mistakes.filter(m => m.questionId !== questionId);
+  removeMistake(questionId, subject) {
+    const subj = subject || this._state.currentSubject || 'math';
+    this._state.mistakes = this._state.mistakes.filter(
+      m => !(m.questionId === questionId && m.subject === subj)
+    );
     this._save();
   },
 
@@ -584,6 +597,27 @@ const store = {
     setTimeout(() => el.remove(), 2000);
   },
 
+  checkAchievements() {
+    const prog = this.get('achievementProgress') || {};
+    const allAch = window.getAchievementDefinitions ? window.getAchievementDefinitions() : [];
+    const unlocked = this.get('achievements') || [];
+    let changed = false;
+    for (const ach of allAch) {
+      if (!unlocked.includes(ach.id)) {
+        if (ach.check(prog)) {
+          unlocked.push(ach.id);
+          changed = true;
+          setTimeout(() => {
+            this.showToast(`🏆 解锁成就：${ach.name}`, 'success');
+          }, 300);
+        }
+      }
+    }
+    if (changed) {
+      this.set('achievements', unlocked);
+    }
+  },
+
   resetAll() {
     localStorage.removeItem(STORE_KEY);
     this._state = getDefaultState();
@@ -594,10 +628,16 @@ const store = {
   // 获取当前有效的学科列表
   getSubjects() {
     return SUBJECTS.filter(s => {
-      // 有题目的学科才显示
-      if (s === 'math') return true || window.QUESTIONS?.getQuestions?.(1,1)?.length > 0;
-      if (s === 'chinese') return typeof window.CHINESE_QUESTIONS !== 'undefined';
-      return true;
+      if (s === 'math') {
+        return !!(window.QUESTIONS && window.QUESTIONS.getQuestions);
+      }
+      if (s === 'chinese') {
+        return !!(window.CHINESE_QUESTIONS && window.CHINESE_QUESTIONS.getQuestions);
+      }
+      if (s === 'english') {
+        return !!(window.ENGLISH_QUESTIONS && window.ENGLISH_QUESTIONS.getQuestions);
+      }
+      return false;
     });
   },
 };

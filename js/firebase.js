@@ -90,7 +90,7 @@ const cloudSave = {
       store.set('stars', data.stars || 0);
       store.set('unitProgress', data.unitProgress || {});
       store.set('mistakes', data.mistakes || []);
-      store.set('garden', data.garden || { width: 8, height: 6, tiles: [], decorations: [], expansions: 0 });
+      store.set('garden', data.garden || { width: 8, height: 6, tiles: [], decorations: [], expansions: 0, houseLevel: 0, furniture: [] });
       store.set('inventory', data.inventory || {});
       store.set('achievements', data.achievements || []);
       store.set('achievementProgress', data.achievementProgress || {});

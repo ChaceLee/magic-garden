@@ -120,6 +120,8 @@ const shop = {
     store.addItem(itemId);
     store._save();
     store.showToast(`✅ 购买了 ${item.name}`, 'success');
+    sound.purchase();
+    store.checkAchievements();
     this.render();
   },
 };

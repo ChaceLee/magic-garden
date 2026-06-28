@@ -15,7 +15,9 @@ const quiz = {
 
   // ---------- 获取当前学科显示名 ----------
   _subjectLabel(subject) {
-    return subject === 'chinese' ? '📝 语文' : '🔢 数学';
+    if (subject === 'chinese') return '📝 语文';
+    if (subject === 'english') return '🔤 英语';
+    return '🔢 数学';
   },
 
   // ---------- 渲染主界面 ----------
@@ -344,11 +346,27 @@ const quiz = {
       `;
       this.createConfetti();
     } else {
+      const q = quizEngine.currentQuestion;
+      let phoneticHtml = '';
+      if (q && q.subject === 'english' && window.ENGLISH_QUESTIONS?.getPhonetic) {
+        const ans = String(result.correctAnswer);
+        if (ans && ans.length <= 20 && /^[a-zA-Z\s'-]+$/.test(ans.trim())) {
+          const words = ans.trim().split(/\s+/);
+          const phoneticParts = words.map(w => {
+            const p = window.ENGLISH_QUESTIONS.getPhonetic(w);
+            return p || '';
+          }).filter(Boolean);
+          if (phoneticParts.length > 0) {
+            phoneticHtml = `<span class="feedback-phonetic">🔊 ${phoneticParts.join(' ')}</span>`;
+          }
+        }
+      }
       feedback.innerHTML = `
         <div class="feedback-wrong animate-shake">
           <span class="feedback-icon">💪</span>
           <span class="feedback-text">加油，再来一次！</span>
           <span class="feedback-answer">正确答案是：<strong>${result.correctAnswer}</strong></span>
+          ${phoneticHtml}
         </div>
       `;
     }
@@ -465,6 +483,13 @@ const quiz = {
       store.showToast('🎉 今日复习已完成！', 'success');
       return;
     }
+
+    quizEngine.combo = 1;
+    quizEngine.streak = 0;
+    quizEngine.bestCombo = 0;
+    quizEngine.questionHistory = [];
+    quizEngine.sessionStats = { total: 0, correct: 0, startTime: Date.now() };
+    quizEngine.filters.subject = s.currentSubject;
 
     this.startReviewQuestion();
   },

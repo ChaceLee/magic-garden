@@ -188,12 +188,12 @@ const quizEngine = {
       if (leveledUp) setTimeout(() => app.showLevelUp(), 600);
     }
 
-    store.recordAnswer(q, correct);
+    store.recordAnswer(q, correct, this.combo);
 
     if (!correct) {
       store.addMistake(q, selected);
     } else {
-      store.removeMistake(q.id);
+      store.removeMistake(q.id, q.subject);
     }
 
     // 更新复习卡片
@@ -217,17 +217,7 @@ const quizEngine = {
     prog.totalAnswered = (prog.totalAnswered || 0) + 1;
     prog.bestCombo = Math.max(prog.bestCombo || 0, this.bestCombo);
     store.set('achievementProgress', prog);
-
-    const allAch = window.getAchievementDefinitions ? window.getAchievementDefinitions() : [];
-    for (const ach of allAch) {
-      if (!store.get('achievements').includes(ach.id)) {
-        if (ach.check(prog)) {
-          store.get('achievements').push(ach.id);
-          store._save();
-          setTimeout(() => store.showToast(`🏆 解锁成就：${ach.name}`, 'success'), 500);
-        }
-      }
-    }
+    store.checkAchievements();
   },
 
   // ---------- 获取单元列表（学科感知） ----------
