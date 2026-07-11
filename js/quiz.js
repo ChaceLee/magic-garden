@@ -639,6 +639,124 @@ const quiz = {
     }
   },
 
+  // ---------- 智能练习 ----------
+  startMistakePractice() {
+    var mistakes = store.get('mistakes') || [];
+    var subject = store.state.currentSubject;
+    var subjectMistakes = mistakes.filter(function(m) { return m.subject === subject; });
+    if (subjectMistakes.length === 0) {
+      store.showToast('🎉 当前学科无错题！', 'success');
+      return;
+    }
+
+    // 从题库中查找对应的错题
+    var Q = subject === 'chinese' ? window.CHINESE_QUESTIONS :
+            subject === 'english' ? window.ENGLISH_QUESTIONS :
+            window.QUESTIONS;
+    if (!Q) return;
+
+    var practicePool = [];
+    for (var m of subjectMistakes) {
+      var pool = Q.getUnitQuestions ? Q.getUnitQuestions(m.grade, m.semester, m.unit) : [];
+      if (pool.length === 0) pool = Q.getQuestions ? Q.getQuestions(m.grade, m.semester) : [];
+      var found = pool.find(function(q) { return q.id === m.questionId; });
+      if (found) practicePool.push({ ...found, grade: m.grade, semester: m.semester, subject: subject, unit: m.unit });
+    }
+
+    if (practicePool.length === 0) {
+      store.showToast('未找到对应题目', 'error');
+      return;
+    }
+
+    // 创建练习会话
+    var shuffled = [...practicePool].sort(function() { return Math.random() - 0.5; });
+    quizEngine.questionHistory = [];
+    quizEngine.sessionStats = { total: 0, correct: 0, startTime: Date.now() };
+    quizEngine.combo = 1;
+    quizEngine.streak = 0;
+
+    // 模拟一个学习会话
+    quizEngine.startSession(subject, practicePool[0].grade, practicePool[0].semester);
+    quizEngine.questionHistory = [];
+    quizEngine._practicePool = shuffled;
+    quizEngine._practiceIndex = 0;
+
+    this.isAnswered = false;
+    this.reviewMode = false;
+    this.showMistakePracticeQuestion();
+  },
+
+  showMistakePracticeQuestion() {
+    if (quizEngine._practiceIndex >= quizEngine._practicePool.length) {
+      this.finishMistakePractice();
+      return;
+    }
+    var q = quizEngine._practicePool[quizEngine._practiceIndex];
+    quizEngine.currentQuestion = q;
+
+    var area = document.getElementById('question-area');
+    if (!area) return;
+
+    var optionsHtml = '';
+    for (var i = 0; i < q.options.length; i++) {
+      var opt = String(q.options[i]).replace(/'/g, '&apos;');
+      var label = String.fromCharCode(65 + i);
+      optionsHtml += '<button class="option-btn" data-opt="' + opt + '" onclick="quiz.selectMistakeOption(this)">' +
+        '<span class="option-label">' + label + '</span>' +
+        '<span class="option-value">' + opt + '</span></button>';
+    }
+
+    area.innerHTML = '<div class="question-card animate-in" style="border:2px solid #A66CFF;">' +
+      '<div style="text-align:center;margin-bottom:6px;">' +
+        '<span style="font-size:0.9rem;font-weight:700;color:#A66CFF;">🧠 智能练习</span>' +
+        '<span style="margin-left:8px;color:#636E72;font-size:0.8rem;">' + (quizEngine._practiceIndex + 1) + '/' + quizEngine._practicePool.length + '</span>' +
+      '</div>' +
+      '<div class="question-text">' + q.question + '</div>' +
+      '<div class="options-grid">' + optionsHtml + '</div>' +
+      '<div class="question-feedback" id="question-feedback"></div>' +
+      '<button class="btn btn-primary btn-block mt-16 next-btn hidden" id="next-btn" onclick="quiz.nextMistakePractice()">➡️ 下一题</button>' +
+    '</div>';
+    this.updateCombo();
+    this.updateSessionStats();
+  },
+
+  selectMistakeOption(btn) {
+    var value = btn.dataset.opt;
+    this.selectOption(btn, value);
+  },
+
+  nextMistakePractice() {
+    quizEngine._practiceIndex++;
+    this.isAnswered = false;
+    this.showMistakePracticeQuestion();
+  },
+
+  finishMistakePractice() {
+    var area = document.getElementById('question-area');
+    if (!area) return;
+    var total = quizEngine._practicePool.length;
+    var correct = quizEngine.sessionStats.correct;
+    area.innerHTML = '<div class="question-card text-center">' +
+      '<div style="font-size:3rem;margin:15px 0;">🎉</div>' +
+      '<h3>智能练习完成！</h3>' +
+      '<p class="mt-8">答对 <strong>' + correct + '</strong> / ' + total + ' 题</p>' +
+      '<div class="progress-bar mt-8" style="max-width:200px;margin:8px auto;"><div class="progress-fill" style="width:' + (correct/total*100) + '%"></div></div>' +
+      '<p class="mt-8" style="color:#636E72;font-size:0.85rem;">' +
+        (correct === total ? '🎉 全对！所有错题已清零！' :
+         '继续加油，下次再来！') +
+      '</p>' +
+      '<div class="mt-16"><button class="btn btn-primary" onclick="quiz.render()">🔄 继续答题</button></div>' +
+    '</div>';
+    // 清除已答对的错题
+    for (var q of quizEngine._practicePool) {
+      if (quizEngine.sessionStats.correct > 0) {
+        store.removeMistake(q.id, q.subject);
+      }
+    }
+    store._save(false);
+    document.getElementById('session-stats').style.display = 'none';
+  },
+
   // ---------- 学习计划 ----------
   renderLearningPlan() {
     var el = document.getElementById('daily-goal');
