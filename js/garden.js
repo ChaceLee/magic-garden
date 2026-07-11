@@ -66,72 +66,17 @@ const garden = {
     const map = document.getElementById('garden-map');
     if (!map) return;
 
-    const g = store.get('garden');
-    const size = store.getGardenSize();
-    const cellW = GARDEN_CELL_SIZE;
-    const mapW = size.width * cellW;
-
-    map.style.width = `${mapW}px`;
-    map.style.position = 'relative';
-
-    // 构建网格
-    let html = '';
-    for (let y = 0; y < size.height; y++) {
-      for (let x = 0; x < size.width; x++) {
-        const tile = g.tiles.find(t => t.x === x && t.y === y);
-        const decor = g.decorations.find(d => d.x === x && d.y === y);
-        const pet = g.decorations.find(d => d.x === x && d.y === y && GARDEN_ITEMS[d.type]?.category === 'pet');
-
-        let content = '';
-        let growthClass = '';
-
-        if (tile) {
-          const item = GARDEN_ITEMS[tile.type];
-          if (item && item.growthTime) {
-            const elapsed = Date.now() - tile.plantedAt;
-            const ratio = Math.min(elapsed / item.growthTime, 1);
-            if (ratio >= 1) {
-              content = item.name.split(' ')[0];
-              growthClass = 'grown';
-            } else if (ratio > 0.5) {
-              content = '🌿';
-              growthClass = 'growing';
-            } else {
-              content = '🌱';
-              growthClass = 'seedling';
-            }
-          } else {
-            content = '???';
-          }
-        } else if (decor) {
-          const item = GARDEN_ITEMS[decor.type];
-          content = item ? item.name.split(' ')[0] : '❓';
-        }
-
-        // 地面样式
-        let bgClass = 'tile-grass';
-        if (tile) bgClass = 'tile-planted';
-
-        html += `
-          <div class="garden-tile ${bgClass} ${growthClass}"
-               data-x="${x}" data-y="${y}"
-               onclick="garden.onTileClick(${x}, ${y})"
-               ondragover="event.preventDefault()"
-               ondrop="garden.onDrop(event, ${x}, ${y})"
-               style="left:${x * cellW}px; top:${y * cellW}px; width:${cellW}px; height:${cellW}px;">
-            <span class="tile-content">${content}</span>
-            ${pet ? '<span class="pet-animation">🐾</span>' : ''}
-          </div>
-        `;
-      }
+    // Use Phaser if available for the garden grid
+    if (typeof Phaser !== 'undefined') {
+      phaserGarden.create();
     }
 
-    map.innerHTML = html;
-    map.style.height = `${size.height * cellW}px`;
-
-    // 更新工具栏和房屋区
+    // Toolbar and house area are always DOM
     this.renderToolbar();
     this.renderHouseArea();
+
+    // Check for newly grown plants
+    this.checkGrownPlants();
   },
 
   // ---------- 工具栏 ----------
@@ -185,7 +130,14 @@ const garden = {
         itemsHtml = '<p class="empty-inv">背包空空如也，去商店买些植物吧！🏪</p>';
       }
 
-      inventoryBar.innerHTML = itemsHtml;
+      // Use a document fragment for better performance with many items
+      const fragment = document.createDocumentFragment();
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = itemsHtml;
+      while (tempDiv.firstChild) {
+        fragment.appendChild(tempDiv.firstChild);
+      }
+      inventoryBar.appendChild(fragment);
       map.parentNode.insertBefore(inventoryBar, map.nextSibling);
     } else {
       document.getElementById('inventory-bar')?.remove();
@@ -197,30 +149,34 @@ const garden = {
     this.editMode = true;
     this.removeMode = false;
     this.render();
-    store.showToast('点击背包物品选择，再点网格放置；点「移除」可回收物品', '');
+    store.showToast('点击背包物品选择，再点网格放置；点“移除”可回收物品', '');
+    var evt = new CustomEvent('garden-mode-change', { detail: { editMode: true, removeMode: false } });
+    document.dispatchEvent(evt);
   },
-
   toggleRemoveMode() {
     this.removeMode = !this.removeMode;
     this.selectedItem = null;
     this.render();
     store.showToast(this.removeMode ? '🗑️ 点击已种植的物品可回收' : '退出移除模式', '');
+    var evt = new CustomEvent('garden-mode-change', { detail: { editMode: true, removeMode: this.removeMode } });
+    document.dispatchEvent(evt);
   },
-
   exitEditMode() {
     this.editMode = false;
     this.removeMode = false;
     this.selectedItem = null;
     this.render();
-    store._save();
+    store._save(false);
+    var evt = new CustomEvent('garden-mode-change', { detail: { editMode: false } });
+    document.dispatchEvent(evt);
   },
-
   // ---------- 选择背包物品 ----------
   selectInventoryItem(itemId) {
     this.selectedItem = this.selectedItem === itemId ? null : itemId;
     this.renderToolbar();
+    var evt = new CustomEvent('garden-mode-change', { detail: { editMode: true, selectedItem: this.selectedItem } });
+    document.dispatchEvent(evt);
   },
-
   // ---------- 点击网格 ----------
   onTileClick(x, y) {
     if (!this.editMode) return;
@@ -349,6 +305,41 @@ const garden = {
       store.showToast(result.msg, 'error');
     }
     this.render();
+  },
+
+  // ---------- Plant growth notification ----------
+  checkGrownPlants() {
+    const g = store.get('garden');
+    if (!g.tiles || g.tiles.length === 0) return;
+
+    const lastVisit = g.lastGardenVisit || 0;
+    const now = Date.now();
+    const newlyGrown = [];
+    let grownCount = 0;
+
+    for (const tile of g.tiles) {
+      const item = GARDEN_ITEMS[tile.type];
+      if (!item || !item.growthTime) continue;
+      const plantedAt = tile.plantedAt || 0;
+      const maturedAt = plantedAt + item.growthTime;
+      // Plant was planted before last visit, matured between last visit and now
+      if (plantedAt <= now && maturedAt > lastVisit && maturedAt <= now) {
+        newlyGrown.push(item.name);
+        grownCount++;
+      }
+    }
+
+    // Update last visit timestamp
+    g.lastGardenVisit = now;
+    store._save(false);
+
+    if (grownCount > 0) {
+      const names = [...new Set(newlyGrown)].slice(0, 3);
+      const msg = names.length <= 3
+        ? names.slice(0, 3).join(" ") + (grownCount > 3 ? " 等 " : "") + " 长成啦！🎉"
+        : grownCount + " 棵植物长成啦！🌰"
+      setTimeout(() => store.showToast(msg, 'success'), 500);
+    }
   },
 
   // ---------- 房屋区域 ----------

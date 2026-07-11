@@ -4,6 +4,19 @@
    ============================================================ */
 
 const STORE_KEY = 'magic_garden_save';
+// ---------- Debounced Save ----------
+let _saveTimer = null;
+function _debounceSave(fn) {
+  if (_saveTimer) return;
+  _saveTimer = setTimeout(() => {
+    _saveTimer = null;
+    fn();
+  }, 300);
+}
+window.addEventListener('beforeunload', () => {
+  if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+});
+
 
 // ---------- 默认初始状态 ----------
 function getDefaultState() {
@@ -96,7 +109,7 @@ const store = {
     }
 
     this._checkDailyReset();
-    this._save();
+    this._save(true);
   },
 
   // 合并默认值
@@ -109,6 +122,7 @@ const store = {
         result.garden.decorations = saved.garden.decorations || [];
         result.garden.expansions = saved.garden.expansions || 0;
         result.garden.houseLevel = saved.garden.houseLevel || 0;
+        result.garden.lastGardenVisit = saved.garden.lastGardenVisit || 0;
         result.garden.furniture = saved.garden.furniture || [];
       } else if (key === 'settings' && saved.settings) {
         result.settings = { ...defaults.settings, ...saved.settings };
@@ -181,26 +195,36 @@ const store = {
 
   set: function(key, value) {
     this._state[key] = value;
-    this._save();
+    this._save(false);
   },
 
   update(key, fn) {
     this._state[key] = fn(this._state[key]);
-    this._save();
+    this._save(false);
   },
 
-  _save() {
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(this._state));
-    } catch (e) {
-      console.warn('存档保存失败', e);
+  _save(immediate) {
+    if (immediate) {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(this._state));
+      } catch (e) {
+        console.warn('存档保存失败', e);
+      }
+      return;
     }
+    _debounceSave(() => {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(this._state));
+      } catch (e) {
+        console.warn('存档保存失败', e);
+      }
+    });
   },
 
   // ----- 金币 / 星星 / 经验 -----
   addCoins(amount) {
     this._state.coins = Math.max(0, this._state.coins + amount);
-    this._save();
+    this._save(false);
     this._updateUI();
     if (amount > 0) {
       this.checkAchievements();
@@ -209,7 +233,7 @@ const store = {
 
   addStars(amount) {
     this._state.stars = Math.max(0, this._state.stars + amount);
-    this._save();
+    this._save(false);
     this._updateUI();
   },
 
@@ -223,7 +247,7 @@ const store = {
       this._state.level++;
       leveledUp = true;
     }
-    this._save();
+    this._save(false);
     this._updateUI();
     if (leveledUp) {
       this.showToast(`🎊 升级啦！达到 Lv.${this._state.level}`, 'success');
@@ -246,7 +270,7 @@ const store = {
   addItem(itemId, count = 1) {
     const inv = this._state.inventory;
     inv[itemId] = (inv[itemId] || 0) + count;
-    this._save();
+    this._save(false);
   },
 
   removeItem(itemId, count = 1) {
@@ -254,7 +278,7 @@ const store = {
     if (!inv[itemId] || inv[itemId] < count) return false;
     inv[itemId] -= count;
     if (inv[itemId] <= 0) delete inv[itemId];
-    this._save();
+    this._save(false);
     return true;
   },
 
@@ -294,7 +318,7 @@ const store = {
 
     this._state.coins -= cost;
     this._state.garden.expansions = e + 1;
-    this._save();
+    this._save(false);
     this._updateUI();
     return { ok: true, msg: '🎉 花园扩展成功！', size: this.getGardenSize() };
   },
@@ -361,7 +385,7 @@ const store = {
     }
 
     this._state.garden.houseLevel = (this.getHouseLevel() + 1);
-    this._save();
+    this._save(false);
     this._updateUI();
     return { ok: true, msg: `🎉 房子升级为${next.name}！`, level: this.getHouseLevel() };
   },
@@ -415,7 +439,7 @@ const store = {
     prog[key].lastPracticed = new Date().toISOString().split('T')[0];
 
     this._state.dailyAnswered++;
-    this._save();
+    this._save(false);
     this._updateUI();
   },
 
@@ -446,7 +470,7 @@ const store = {
       this._state.mistakes.sort((a, b) => a.count - b.count);
       this._state.mistakes.shift();
     }
-    this._save();
+    this._save(false);
   },
 
   removeMistake(questionId, subject) {
@@ -454,7 +478,11 @@ const store = {
     this._state.mistakes = this._state.mistakes.filter(
       m => !(m.questionId === questionId && m.subject === subj)
     );
+<<<<<<< HEAD
     this._save();
+=======
+    this._save(false);
+>>>>>>> 20f3330 (feat: Phaser garden engine + UI refactor)
   },
 
   // ----- 复习卡片系统（SM-2算法） -----
@@ -485,7 +513,7 @@ const store = {
     card.nextReview = tomorrow;
 
     this._state.reviewCards.push(card);
-    this._save();
+    this._save(false);
     return card;
   },
 
@@ -525,7 +553,7 @@ const store = {
 
     const next = new Date(Date.now() + card.interval * 86400000);
     card.nextReview = next.toISOString().split('T')[0];
-    this._save();
+    this._save(false);
   },
 
   // 获取今日复习统计
@@ -621,7 +649,7 @@ const store = {
   resetAll() {
     localStorage.removeItem(STORE_KEY);
     this._state = getDefaultState();
-    this._save();
+    this._save(false);
     window.location.reload();
   },
 

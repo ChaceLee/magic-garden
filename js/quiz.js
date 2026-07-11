@@ -13,6 +13,70 @@ const quiz = {
   reviewIndex: 0,
   reviewResults: { correct: 0, total: 0 },
 
+  // Lazy-loaded subjects tracker
+  _loadedSubjects: { math: true }, // math is loaded by default in index.html
+  _loadingSubject: null,
+  _loadRetries: 0,
+
+  // Dynamically load a subject question file
+  _loadSubjectData(subject) {
+    if (this._loadedSubjects[subject]) return true;
+    if (this._loadingSubject === subject) return false; // already loading
+
+    const fileMap = {
+      chinese: 'js/questions-chinese.js',
+      english: 'js/questions-english.js'
+    };
+    const src = fileMap[subject];
+    if (!src) return true;
+
+    this._loadingSubject = subject;
+    this._loadRetries = 0;
+
+    // Show loading indicator
+    const area = document.getElementById('question-area');
+    if (area) {
+      area.innerHTML = '<div class="question-placeholder"><div class="placeholder-icon">⏳</div><p>加载题目数据中...</p></div>';
+    }
+
+    return false; // not loaded yet
+  },
+
+  _loadSubjectScript(subject, callback) {
+    const fileMap = {
+      chinese: 'js/questions-chinese.js',
+      english: 'js/questions-english.js'
+    };
+    const src = fileMap[subject];
+    if (!src) { callback(); return; }
+
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => {
+      this._loadedSubjects[subject] = true;
+      this._loadingSubject = null;
+      this._loadRetries = 0;
+      // Verify the global is set
+      const globalKey = subject === 'chinese' ? 'CHINESE_QUESTIONS' : 'ENGLISH_QUESTIONS';
+      if (!window[globalKey]) {
+        console.warn('Subject data not found after load:', subject);
+      }
+      callback();
+    };
+    script.onerror = () => {
+      this._loadRetries++;
+      if (this._loadRetries < 3) {
+        console.warn('Retrying subject load:', subject, this._loadRetries);
+        setTimeout(() => this._loadSubjectScript(subject, callback), 1000);
+      } else {
+        this._loadingSubject = null;
+        store.showToast('加载失败，请检查网络连接', 'error');
+        callback();
+      }
+    };
+    document.body.appendChild(script);
+  },
+
   // ---------- 获取当前学科显示名 ----------
   _subjectLabel(subject) {
     if (subject === 'chinese') return '📝 语文';
@@ -114,10 +178,21 @@ const quiz = {
 
   // ---------- 学科切换 ----------
   selectSubject(subject) {
+    if (this._loadingSubject === subject) return; // already loading this subject
     store.set('currentSubject', subject);
     quizEngine.filters.subject = subject;
     quizEngine.filters.unit = null;
-    this.render();
+
+    // Lazy-load question data if not already cached
+    if (!this._loadedSubjects[subject]) {
+      const _this = this;
+      this._loadSubjectData(subject);
+      this._loadSubjectScript(subject, () => {
+        _this.render();
+      });
+    } else {
+      this.render();
+    }
   },
 
   // ---------- 单元选择器 ----------
@@ -346,6 +421,10 @@ const quiz = {
       `;
       this.createConfetti();
     } else {
+<<<<<<< HEAD
+=======
+      sound.wrong();
+>>>>>>> 20f3330 (feat: Phaser garden engine + UI refactor)
       const q = quizEngine.currentQuestion;
       let phoneticHtml = '';
       if (q && q.subject === 'english' && window.ENGLISH_QUESTIONS?.getPhonetic) {

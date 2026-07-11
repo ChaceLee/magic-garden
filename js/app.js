@@ -13,6 +13,15 @@ const app = {
       store.init();
     }
 
+    // Resume AudioContext on first user interaction (mobile Chrome fix)
+    const _resumeAudio = () => {
+      sound.resumeOnInteraction();
+      document.removeEventListener('touchstart', _resumeAudio);
+      document.removeEventListener('click', _resumeAudio);
+    };
+    document.addEventListener('touchstart', _resumeAudio, { once: true });
+    document.addEventListener('click', _resumeAudio, { once: true });
+
     // 设置导航
     this.setupNavigation();
 

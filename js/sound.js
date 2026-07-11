@@ -17,6 +17,14 @@ const sound = {
     return this._ctx;
   },
 
+  // Auto-resume AudioContext on first user gesture (required for Chrome/iOS)
+  resumeOnInteraction() {
+    const ctx = this._getContext();
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume();
+    }
+  },
+
   // 答对音效 — 欢乐上升音阶
   correct() {
     if (!store.get('settings').soundEnabled) return;

@@ -1,5 +1,6 @@
 /* ============================================================
-   🌸 梦幻数学花园 — 成就 & 家长面板样式
+   🌻 知识花园 — 成就 & 家长面板
+   明亮高对比儿童风格
    ============================================================ */
 
 #achievements-screen {
@@ -14,7 +15,7 @@
   text-align: center;
 }
 
-/* ---------- 成就统计 ---------- */
+/* Achievement Stats */
 .achievement-stats {
   background: white;
   border-radius: var(--radius);
@@ -23,9 +24,10 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  border: 2px solid #F0F0F5;
 }
 
-/* ---------- 成就网格 ---------- */
+/* Achievement Grid */
 .achievement-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -44,32 +46,35 @@
   text-align: center;
   transition: transform 0.2s;
   position: relative;
+  border: 2px solid transparent;
 }
 
 .achievement-card.unlocked {
-  border: 2px solid var(--color-accent);
+  border-color: #FFD93D;
+  background: linear-gradient(180deg, #FFFDF5, white);
+  box-shadow: 0 4px 15px rgba(255,217,61,0.2);
 }
 
 .achievement-card.locked {
-  opacity: 0.65;
+  opacity: 0.6;
   filter: grayscale(0.5);
 }
 
 .achievement-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 .ach-icon {
-  font-size: 2rem;
+  font-size: 2.2rem;
 }
 
 .ach-name {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
 }
 
 .ach-desc {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--color-text-light);
 }
 
@@ -77,10 +82,10 @@
   position: absolute;
   top: 4px;
   right: 6px;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
-/* ---------- 家长面板 ---------- */
+/* Parent Dashboard */
 #parent-dashboard {
   display: flex;
   flex-direction: column;
@@ -92,9 +97,10 @@
   border-radius: var(--radius);
   padding: 16px;
   box-shadow: var(--shadow-soft);
+  border: 2px solid #F0F0F5;
 }
 
-/* ---------- 家长面板学科切换 ---------- */
+/* Subject Tabs */
 .parent-subject-tabs {
   display: flex;
   gap: 6px;
@@ -102,42 +108,53 @@
 }
 
 .parent-subject-btn {
-  padding: 6px 18px;
-  border: 1.5px solid #e8e8e8;
+  padding: 8px 20px;
+  border: 2px solid #E0E4E8;
   border-radius: 20px;
   background: white;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   font-family: var(--font-main);
   color: var(--color-text-light);
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .parent-subject-btn.active {
-  border-color: var(--color-primary);
-  background: #fff5f7;
-  color: var(--color-primary-dark);
+  border-color: transparent;
+  background: linear-gradient(135deg, #FF6B6B, #FF8C42);
+  color: white;
+  box-shadow: 0 3px 10px rgba(255,107,107,0.3);
+}
+
+.parent-subject-btn:nth-child(2).active {
+  background: linear-gradient(135deg, #45B7D1, #3498DB);
+}
+
+.parent-subject-btn:nth-child(3).active {
+  background: linear-gradient(135deg, #51CF66, #2ECC71);
 }
 
 .mistake-subject-label {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-light);
-  margin: 6px 0 4px;
-  padding: 4px 8px;
-  background: #f0f0f0;
+  margin: 8px 0 4px;
+  padding: 4px 10px;
+  background: #F0F2F5;
   border-radius: 6px;
   display: inline-block;
 }
 
 .parent-card h3 {
-  font-size: 1rem;
+  font-size: 1.05rem;
   margin-bottom: 12px;
   color: var(--color-text);
+  font-weight: 700;
 }
 
-/* 统计网格 */
+/* Stats Grid */
 .parent-stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -148,24 +165,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
+  padding: 12px;
   background: var(--color-bg);
   border-radius: var(--radius-sm);
 }
 
 .p-stat-value {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--color-primary-dark);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-primary);
 }
 
 .p-stat-label {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--color-text-light);
   margin-top: 2px;
+  font-weight: 500;
 }
 
-/* 知识点进度 */
+/* Knowledge Progress */
 .knowledge-progress {
   display: flex;
   flex-direction: column;
@@ -173,14 +191,15 @@
 }
 
 .grade-block {
-  border-left: 3px solid var(--color-secondary);
+  border-left: 4px solid #45B7D1;
   padding-left: 12px;
 }
 
 .grade-header {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 600;
   color: var(--color-text-light);
   margin-bottom: 6px;
 }
@@ -196,7 +215,7 @@
   grid-template-columns: 1fr auto 80px auto;
   gap: 8px;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
 }
 
 .unit-name {
@@ -212,12 +231,12 @@
   text-align: right;
 }
 
-.unit-rate.good { color: var(--color-success); }
-.unit-rate.ok   { color: #ff9800; }
-.unit-rate.low  { color: var(--color-error); }
+.unit-rate.good { color: #51CF66; }
+.unit-rate.ok   { color: #FF8C42; }
+.unit-rate.low  { color: #FF6B6B; }
 
 .unit-last {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--color-text-light);
   text-align: right;
 }
@@ -229,7 +248,7 @@
   padding: 10px;
 }
 
-/* 错题集 */
+/* Mistakes Grid */
 .mistakes-grid {
   display: flex;
   flex-direction: column;
@@ -244,9 +263,9 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #fff8f0;
+  background: linear-gradient(135deg, #FFF8F0, #FFF3E0);
   border-radius: var(--radius-sm);
-  border: 1px solid #ffecd5;
+  border: 1px solid #FFECD5;
   font-size: 0.85rem;
 }
 
@@ -259,16 +278,17 @@
 }
 
 .mistake-answer strong {
-  color: var(--color-success);
+  color: #51CF66;
+  font-weight: 700;
 }
 
 .mistake-count {
-  font-size: 0.7rem;
-  color: var(--color-error);
-  font-weight: 600;
+  font-size: 0.72rem;
+  color: #FF6B6B;
+  font-weight: 700;
 }
 
-/* 设置 */
+/* Settings */
 .settings-grid {
   display: flex;
   flex-direction: column;
@@ -279,17 +299,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
 }
 
 .setting-label {
   min-width: 100px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .setting-row input[type="range"] {
   flex: 1;
-  accent-color: var(--color-primary);
+  accent-color: #FF6B6B;
   max-width: 150px;
 }
 
@@ -299,7 +319,7 @@
   color: var(--color-text-light);
 }
 
-/* 切换开关 */
+/* Toggle Switch */
 .toggle {
   position: relative;
   display: inline-block;
@@ -317,7 +337,7 @@
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: #ccc;
+  background: #CCC;
   border-radius: 24px;
   transition: 0.3s;
 }
@@ -335,23 +355,24 @@
 }
 
 .toggle input:checked + .toggle-slider {
-  background: var(--color-primary);
+  background: #51CF66;
 }
 
 .toggle input:checked + .toggle-slider::before {
   transform: translateX(20px);
 }
 
-/* 危险区 */
+/* Danger Zone */
 .danger-zone {
-  border: 1px solid var(--color-error);
+  border: 2px solid #FF6B6B;
+  background: linear-gradient(135deg, #FFF0F0, white);
 }
 
 .danger-zone h3 {
-  color: var(--color-error);
+  color: #FF6B6B;
 }
 
-/* ---------- 时间选项按钮 ---------- */
+/* Timer Options */
 .timer-options {
   display: flex;
   flex-wrap: wrap;
@@ -360,34 +381,43 @@
 }
 
 .timer-opt-btn {
-  padding: 6px 14px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
+  padding: 8px 16px;
+  border: 2px solid #E0E4E8;
+  border-radius: 10px;
   background: white;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   font-family: var(--font-main);
   color: var(--color-text);
   cursor: pointer;
   transition: all 0.15s;
-  min-width: 44px;
+  min-width: 48px;
   text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .timer-opt-btn:hover {
-  border-color: var(--color-secondary);
+  border-color: #45B7D1;
 }
 
 .timer-opt-btn.active {
-  border-color: var(--color-primary);
-  background: linear-gradient(135deg, #fff5f7, white);
-  color: var(--color-primary-dark);
-  box-shadow: 0 0 0 2px rgba(255,158,181,0.25);
+  border-color: transparent;
+  background: linear-gradient(135deg, #FF6B6B, #FF8C42);
+  color: white;
+  box-shadow: 0 3px 10px rgba(255,107,107,0.3);
 }
 
-/* ---------- 页面内分隔线 ---------- */
+/* Separator */
 #achievements-screen hr {
   border: none;
-  border-top: 2px dashed #e8e8e8;
-  margin: 8px 0;
+  border-top: 3px dashed #E0E4E8;
+  margin: 12px 0;
+}
+
+/* Cloud Save */
+.cloud-save-btn {
+  background: linear-gradient(135deg, #A66CFF, #8B5CF6) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 3px 10px rgba(166,108,255,0.3);
 }

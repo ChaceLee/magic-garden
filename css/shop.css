@@ -1,5 +1,6 @@
 /* ============================================================
-   🌸 梦幻数学花园 — 商店样式
+   🌻 知识花园 — 商店界面
+   明亮高对比儿童风格
    ============================================================ */
 
 #shop-screen {
@@ -14,12 +15,13 @@
   text-align: center;
 }
 
-/* ---------- 分类 ---------- */
+/* Category */
 .shop-category {
   background: white;
   border-radius: var(--radius);
   padding: 16px;
   box-shadow: var(--shadow-soft);
+  border: 2px solid #F0F0F5;
 }
 
 .category-header {
@@ -30,15 +32,20 @@
 }
 
 .category-header h3 {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .category-count {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--color-text-light);
+  background: var(--color-bg);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 600;
 }
 
-/* ---------- 商品网格 ---------- */
+/* Shop Items Grid */
 .category-items {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -50,28 +57,32 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 12px 8px;
+  padding: 14px 8px;
   background: var(--color-bg);
   border-radius: var(--radius-sm);
   text-align: center;
-  transition: transform 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid transparent;
 }
 
 .shop-item:not(.locked):hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  border-color: #45B7D1;
 }
 
 .shop-item.locked {
-  opacity: 0.6;
+  opacity: 0.5;
+  filter: grayscale(0.6);
 }
 
 .shop-item-icon {
-  font-size: 2rem;
+  font-size: 2.2rem;
 }
 
 .shop-item-name {
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text);
 }
 
@@ -83,17 +94,18 @@
 }
 
 .item-info-badge {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  background: #e8e8e8;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  background: #E8ECF0;
   border-radius: 8px;
   color: var(--color-text-light);
+  font-weight: 600;
 }
 
 .shop-item-cost {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  color: #ff8c00;
+  color: #FF8C42;
 }
 
 .shop-item-cost.too-expensive {
@@ -101,13 +113,14 @@
 }
 
 .shop-item-lock {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--color-text-light);
+  font-weight: 600;
 }
 
 .shop-item .btn-disabled {
-  background: #ddd;
-  color: #aaa;
+  background: #E0E4E8;
+  color: #A0A8B0;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -116,4 +129,5 @@
   text-align: center;
   color: var(--color-text-light);
   padding: 40px;
+  font-size: 1rem;
 }
