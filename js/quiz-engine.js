@@ -10,6 +10,13 @@ const quizEngine = {
   streak: 0,
   questionHistory: [],
 
+  // Boss 战状态
+  bossMode: false,
+  bossQuestions: [],
+  bossIndex: 0,
+  bossStartTime: 0,
+  bossErrors: 0,
+
   sessionStats: {
     total: 0,
     correct: 0,
@@ -104,6 +111,18 @@ const quizEngine = {
     }
     if (candidates.length === 0) {
       candidates = pool;
+    }
+
+    // 自适应：优先弱点单元
+    if (!unit && store.get('settings').adaptiveLearning) {
+      var priorityUnit = this._getAdaptivePriority();
+      if (priorityUnit && Q.getUnitQuestions) {
+        var priorityPool = Q.getUnitQuestions(grade, semester, priorityUnit);
+        if (priorityPool.length > 0) {
+          var filtered = priorityPool.filter(function(q) { return !mistakeIds.has(q.id); });
+          if (filtered.length >= 2) candidates = filtered.map(function(q) { return { ...q, subject: subject }; });
+        }
+      }
     }
 
     // 错题优先
@@ -211,6 +230,95 @@ const quizEngine = {
     };
   },
 
+  // ---------- Boss 战 ----------
+  startBossBattle(subject, grade, semester, unit) {
+    this.filters.subject = subject;
+    this.filters.grade = grade;
+    this.filters.semester = semester;
+    this.filters.unit = unit;
+
+    this.bossMode = true;
+    this.bossIndex = 0;
+    this.bossErrors = 0;
+    this.bossStartTime = Date.now();
+    this.combo = 1;
+    this.streak = 0;
+    this.sessionStats = { total: 0, correct: 0, startTime: Date.now() };
+
+    var Q = this._getQuestions();
+    var pool = [];
+    if (unit && Q.getUnitQuestions) {
+      pool = Q.getUnitQuestions(grade, semester, unit);
+    } else {
+      pool = Q.getQuestions(grade, semester);
+    }
+
+    // 随机选 5 题，尽量选不同难度
+    var shuffled = [...pool].sort(function() { return Math.random() - 0.5; });
+    this.bossQuestions = shuffled.slice(0, Math.min(5, shuffled.length));
+    if (this.bossQuestions.length < 3) {
+      // 题目不够，补一些
+      this.bossQuestions = shuffled;
+    }
+    // 打乱选项
+    for (var q of this.bossQuestions) {
+      if (q.options) q.options = [...q.options].sort(function() { return Math.random() - 0.5; });
+    }
+    return this.bossQuestions.length;
+  },
+
+  getBossQuestion() {
+    if (this.bossIndex >= this.bossQuestions.length) return null;
+    var q = { ...this.bossQuestions[this.bossIndex], grade: this.filters.grade, semester: this.filters.semester, subject: this.filters.subject };
+    if (!q.options || q.options.length < 2) {
+      q.options = this._generateOptions(q);
+    } else {
+      q.options = [...q.options].sort(function() { return Math.random() - 0.5; });
+    }
+    this.currentQuestion = q;
+    return q;
+  },
+
+  submitBossAnswer(selected) {
+    var q = this.currentQuestion;
+    if (!q) return null;
+    var correct = String(q.answer) === String(selected);
+    this.sessionStats.total++;
+    if (correct) this.sessionStats.correct++;
+    else this.bossErrors++;
+    if (!correct) this.bossIndex = Math.min(this.bossIndex + 1, this.bossQuestions.length);
+    else this.bossIndex++;
+
+    // 记录掌握度
+    store.recordMastery(this.filters.subject, q.id, this.filters.unit, correct);
+
+    return {
+      correct: correct,
+      correctAnswer: q.answer,
+      isDone: this.bossIndex >= this.bossQuestions.length,
+      totalErrors: this.bossErrors,
+      totalQuestions: this.bossQuestions.length,
+      allCorrect: this.bossErrors === 0 && this.bossIndex >= this.bossQuestions.length,
+    };
+  },
+
+  calcBossStars() {
+    if (this.bossErrors > 0) return 0;
+    var elapsed = Date.now() - this.bossStartTime;
+    // <30s = 3星, <60s = 2星, >=60s = 1星
+    if (elapsed < 30000) return 3;
+    if (elapsed < 60000) return 2;
+    return 1;
+  },
+
+  // ---------- 自适应学习 ----------
+  _getAdaptivePriority() {
+    if (!store.get('settings').adaptiveLearning) return null;
+    var weak = store.getWeakAreas(this.filters.subject, this.filters.grade, this.filters.semester);
+    if (weak.length === 0) return null;
+    // 选最弱的单元
+    return weak[0].unit;
+  },
   _updateAchievements(correct) {
     const prog = store.get('achievementProgress') || {};
     prog.totalCorrect = (prog.totalCorrect || 0) + (correct ? 1 : 0);

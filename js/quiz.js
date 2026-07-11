@@ -421,10 +421,7 @@ const quiz = {
       `;
       this.createConfetti();
     } else {
-<<<<<<< HEAD
-=======
       sound.wrong();
->>>>>>> 20f3330 (feat: Phaser garden engine + UI refactor)
       const q = quizEngine.currentQuestion;
       let phoneticHtml = '';
       if (q && q.subject === 'english' && window.ENGLISH_QUESTIONS?.getPhonetic) {
@@ -513,6 +510,153 @@ const quiz = {
         </div>
       </div>
     `;
+  },
+
+  // ---------- Boss 战 ----------
+  _checkBossUnlock() {
+    var s = store.state;
+    var unit = quizEngine.filters.unit;
+    if (!unit) return false;
+    if (!store.get('settings').bossEnabled) return false;
+    return store.isBossUnlocked(s.currentSubject, s.currentGrade, s.currentSemester, unit);
+  },
+
+  startBossBattle() {
+    var s = store.state;
+    var count = quizEngine.startBossBattle(s.currentSubject, s.currentGrade, s.currentSemester, quizEngine.filters.unit);
+    if (count < 3) {
+      store.showToast('这个单元题目太少，无法启动 Boss 战', 'error');
+      return;
+    }
+    this.renderBossBattle();
+  },
+
+  renderBossBattle() {
+    var area = document.getElementById('question-area');
+    if (!area) return;
+    var q = quizEngine.getBossQuestion();
+    if (!q) return;
+
+    var total = quizEngine.bossQuestions.length;
+    var cur = quizEngine.bossIndex + 1;
+    var bossHp = Math.max(0, total - quizEngine.bossErrors);
+    var maxHp = total;
+
+    var btnHtml = '';
+    for (var i = 0; i < q.options.length; i++) {
+      var opt = String(q.options[i]).replace(/'/g, '&apos;');
+      var label = String.fromCharCode(65 + i);
+      btnHtml += '<button class="option-btn" data-opt="' + opt + '" onclick="quiz.selectBossOption(this)">' +
+        '<span class="option-label">' + label + '</span>' +
+        '<span class="option-value">' + opt + '</span></button>';
+    }
+
+    var html = '<div class="question-card animate-in" style="border:3px solid #FF6B6B;background:linear-gradient(180deg,#FFF0F0,white)">' +
+      '<div style="text-align:center;margin-bottom:8px;">' +
+        '<span style="font-size:1.3rem;font-weight:700;color:#FF6B6B;">🗡️ Boss 战 🔥</span>' +
+        '<span style="margin-left:8px;color:#636E72;font-size:0.85rem;">' + cur + '/' + total + '</span>' +
+      '</div>' +
+      '<div class="goal-bar" style="margin-bottom:8px;">' +
+        '<div class="goal-fill" style="width:' + (bossHp/maxHp*100) + '%;background:linear-gradient(90deg,#FF6B6B,#E74C3C);height:100%;border-radius:4px;transition:width 0.3s"></div>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:#636E72;margin-bottom:10px;">' +
+        '<span>❤️ HP: ' + bossHp + '/' + maxHp + '</span>' +
+        '<span>⌨️ 错误: ' + quizEngine.bossErrors + '</span>' +
+      '</div>' +
+      '<div class="question-difficulty">🛡️ 必须全对才能过关！</div>' +
+      '<div class="question-text">' + q.question + '</div>' +
+      '<div class="options-grid">' + btnHtml + '</div>' +
+      '<div class="question-feedback" id="boss-feedback"></div>' +
+    '</div>';
+    area.innerHTML = html;
+  },  selectBossOption(btn, value) {
+    var self = this;
+    var result = quizEngine.submitBossAnswer(btn.dataset.opt);
+    var feedback = document.getElementById('boss-feedback');
+    var options = document.querySelectorAll('.option-btn');
+    options.forEach(function(b) {
+      var val = b.dataset.opt;
+      if (String(val) === String(result.correctAnswer)) b.classList.add('correct');
+      else if (val === value && !result.correct) b.classList.add('wrong');
+      b.disabled = true;
+    });
+
+    if (result.correct) {
+      feedback.innerHTML = '<div class="feedback-correct animate-pop" style="background:linear-gradient(135deg,#E8FDE8,#D4F5D4);border:2px solid #51CF66;padding:10px;border-radius:10px;margin-top:12px;text-align:center;font-weight:700;">✅ 正确！</div>';
+      sound.correct();
+    } else {
+      feedback.innerHTML = '<div class="feedback-wrong animate-shake" style="background:linear-gradient(135deg,#FFF0F0,#FFE0E0);border:2px solid #FF6B6B;padding:10px;border-radius:10px;margin-top:12px;text-align:center;">' +
+        '❌ 答错！正确答案是：<strong style="color:#FF6B6B;">' + result.correctAnswer + '</strong></div>';
+      sound.wrong();
+    }
+
+    setTimeout(function() {
+      if (result.isDone) {
+        self.showBossResult(result);
+      } else {
+        self.renderBossBattle();
+      }
+    }, result.correct ? 600 : 1200);
+  },
+
+  showBossResult(result) {
+    var area = document.getElementById('question-area');
+    if (!area) return;
+
+    if (result.allCorrect) {
+      var stars = quizEngine.calcBossStars();
+      var s = store.state;
+      // 记录 Boss 战结果
+      store.recordBossResult(s.currentSubject, s.currentGrade, s.currentSemester, quizEngine.filters.unit, stars, Date.now() - quizEngine.bossStartTime);
+
+      // 奖励
+      var coinBonus = stars * 50;
+      store.addCoins(coinBonus);
+      store.addStars(stars);
+
+      quizEngine.bossMode = false;
+      quizEngine.bossQuestions = [];
+
+      area.innerHTML = '<div class="question-card text-center" style="border:3px solid #FFD93D;background:linear-gradient(180deg,#FFFDF5,white)">' +
+        '<div style="font-size:3rem;margin:10px 0;">🎉</div>' +
+        '<h2 style="color:#FF6B6B;">Boss 败！大获全胜！</h2>' +
+        '<div style="margin:12px 0;font-size:1.5rem;">' + '⭐'.repeat(stars) + '</div>' +
+        '<p style="color:#636E72;">获得 <strong style="color:#FF8C42;">☀️ ' + coinBonus + '</strong> 阳光币和 <strong style="color:#FFD93D;">⭐ ' + stars + '</strong> 星星</p>' +
+        '<p style="font-size:0.85rem;color:#636E72;margin-top:6px;">达到快速通关可获得更多星星！</p>' +
+        '<div class="mt-16"><button class="btn btn-primary" onclick="quiz.render()">🎉 继续答题</button></div>' +
+      '</div>';
+    } else {
+      quizEngine.bossMode = false;
+      quizEngine.bossQuestions = [];
+      area.innerHTML = '<div class="question-card text-center" style="border:3px solid #95A5A6;">' +
+        '<div style="font-size:3rem;margin:10px 0;">💪</div>' +
+        '<h2 style="color:#636E72;">加油！下次再战！</h2>' +
+        '<p class="mt-8" style="color:#636E72;">' +
+          '答对 <strong>' + result.sessionStats.correct + '</strong>/' + result.totalQuestions + ' 题，继续练习后再来挑战 Boss！' +
+        '</p>' +
+        '<div class="mt-16"><button class="btn btn-secondary" onclick="quiz.render()">🔄 继续练习</button></div>' +
+      '</div>';
+    }
+  },
+
+  // ---------- 学习计划 ----------
+  renderLearningPlan() {
+    var el = document.getElementById('daily-goal');
+    if (!el) return;
+    var plan = store.getDailyPlan(store.state.currentSubject);
+    if (!plan || plan.weakAreas.length === 0) return;
+
+    var html = '<div class="goal-card" style="border-left:4px solid #A66CFF;">' +
+      '<div class="goal-header"><span>🧠 学习计划</span></div>' +
+      '<div style="font-size:0.82rem;color:#636E72;">' +
+        '弱点单元：' + plan.weakAreas.map(function(w) { return '<strong style="color:#FF6B6B;">' + w.unit + '</strong>(' + w.accuracy + '%)'; }).join(', ') +
+      '</div>' +
+      '<div style="font-size:0.82rem;color:#636E72;margin-top:4px;">' +
+        '📅 待复习 ' + plan.dueReviews + ' 张卡片 | 今日已答 ' + plan.dailyAnswered + '/' + plan.target + ' 题' +
+      '</div>' +
+    '</div>';
+
+    el.innerHTML = html + el.innerHTML;
   },
 
   // ---------- 复习模式 ----------

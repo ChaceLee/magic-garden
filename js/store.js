@@ -478,11 +478,7 @@ const store = {
     this._state.mistakes = this._state.mistakes.filter(
       m => !(m.questionId === questionId && m.subject === subj)
     );
-<<<<<<< HEAD
-    this._save();
-=======
     this._save(false);
->>>>>>> 20f3330 (feat: Phaser garden engine + UI refactor)
   },
 
   // ----- 复习卡片系统（SM-2算法） -----
